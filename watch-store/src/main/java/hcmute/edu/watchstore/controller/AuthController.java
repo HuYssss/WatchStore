@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import hcmute.edu.watchstore.dto.request.LoginRequest;
@@ -25,5 +26,15 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginReq) {
         return this.userService.login(loginReq);
+    }
+
+    @PostMapping("/forgotPassword")
+    public ResponseEntity<?> forgotPassword(@RequestParam(value = "email", required = true) String email) {
+        return this.userService.generateTokenReset(email);
+    }
+    
+    @PostMapping("/resetPassword")
+    public ResponseEntity<?> resetPassword(@RequestParam(value = "token", required = true) String token, String password) {
+        return this.userService.resetPassword(token, password);
     }
 }

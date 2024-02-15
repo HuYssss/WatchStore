@@ -37,7 +37,7 @@ public class JwtUtils {
 
     private static String createToken(Map<String, Object> claims, String userName) {
         long currentTime = System.currentTimeMillis();
-        long expiredTimeInMillis = 30 * 24 * 60 * 60 * 1_000L; // 30 ngay
+        long expiredTimeInMillis = 3600 * 1_000L; // 1 giờ
         return Jwts.builder().setClaims(claims).setSubject(userName).setIssuedAt(new Date(currentTime))
                 .setExpiration(new Date(currentTime + expiredTimeInMillis))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256).compact();

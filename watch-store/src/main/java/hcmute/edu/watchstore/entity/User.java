@@ -36,4 +36,6 @@ public class User {
     private ObjectId cart;
 
     private String state;
+    
+    private String token;
 }

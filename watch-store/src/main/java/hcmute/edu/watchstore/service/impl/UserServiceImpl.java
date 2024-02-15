@@ -20,6 +20,8 @@ import hcmute.edu.watchstore.entity.Cart;
 import hcmute.edu.watchstore.entity.User;
 import hcmute.edu.watchstore.exception.InvalidValueException;
 import hcmute.edu.watchstore.exception.NoParamException;
+import hcmute.edu.watchstore.helper.MailService;
+import hcmute.edu.watchstore.helper.ResetTokenGenerator;
 import hcmute.edu.watchstore.repository.CartRepository;
 import hcmute.edu.watchstore.repository.UserRepository;
 import hcmute.edu.watchstore.service.UserService;
@@ -41,6 +43,9 @@ public class UserServiceImpl extends ServiceBase implements UserService {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Autowired
+    private MailService mailService;
+
     @Override
     public User findUserByUsername(String username) {
         Optional<User> currentUser = this.userRepository.findByUsername(username);
@@ -49,15 +54,24 @@ public class UserServiceImpl extends ServiceBase implements UserService {
 
     @Override
     public ResponseEntity<?> register(UserRequest userReq) {
+        if (this.userRepository.findByEmail(userReq.getEmail()).isPresent())
+            return error(ResponseCode.EMAIL_ALREADY_REGISTERED.getCode(), ResponseCode.EMAIL_ALREADY_REGISTERED.getMessage());
+        
+        if (this.userRepository.findByUsername(userReq.getUsername()).isPresent()) {
+            return error(ResponseCode.DUPLICATED_USERNAME.getCode(), ResponseCode.DUPLICATED_USERNAME.getMessage());
+        }
+            
         try {
             User saveUser = Validation.validateSaveUser(userReq);
             saveUser.setPassword(this.passwordEncoder.encode(saveUser.getPassword()));
-            this.userRepository.save(saveUser);
 
             Cart cart = new Cart();
             cart.setUser(saveUser.getId());
             this.cartRepository.save(cart);
 
+            saveUser.setCart(cart.getId());
+            this.userRepository.save(saveUser);
+            
             return success(saveUser);
         } catch (InvalidValueException e) {
             throw new RuntimeException(e);
@@ -85,6 +99,55 @@ public class UserServiceImpl extends ServiceBase implements UserService {
             e.printStackTrace();
             return error(ResponseCode.INCORRECT_AUTHEN.getCode(), ResponseCode.INCORRECT_AUTHEN.getMessage());
         }
+    }
+
+    @Override
+    public ResponseEntity<?> generateTokenReset(String email) {
+        Optional<User> user = this.userRepository.findByEmail(email);
+        String resetToken = ResetTokenGenerator.generateRandomString();
+
+        String[] cc = new String[1];
+        cc[0] = email;
+
+        if (user.isPresent()) {
+            try {
+                this.mailService.sendMail(null, email, cc
+                , "Token Reset Password"
+                , "Hi "+ user.get().getUsername() + ",\r\n" + "\r\n" +
+                                    "There was a request to change your password!\r\n" + "\r\n" +
+                                    "If you did not make this request then please ignore this email.\r\n" + "\r\n" +
+                                    "Otherwise, please use this token to reset your password: " + resetToken);
+
+                user.get().setToken(resetToken);
+                
+                this.userRepository.save(user.get());
+                
+                return success("Reset password token has been sent");
+            } catch (Exception e) {
+                return error(ResponseCode.CANNOT_SEND_EMAIL.getCode(), ResponseCode.CANNOT_SEND_EMAIL.getMessage());
+            } 
+        }
+        else
+            return error(ResponseCode.USER_NOT_FOUND.getCode(), ResponseCode.USER_NOT_FOUND.getMessage());
+    }
+
+    @Override
+    public ResponseEntity<?> resetPassword(String token, String password) {
+        if (password.isEmpty()) {
+            return error(ResponseCode.NO_PARAM.getCode(), ResponseCode.NO_PARAM.getMessage());
+        }
+
+        Optional<User> user = this.userRepository.findByToken(token);
+
+        if (user.isPresent() && !user.get().getToken().isEmpty()) {
+            user.get().setPassword(this.passwordEncoder.encode(password));
+            user.get().setToken(null);
+            this.userRepository.save(user.get());
+
+            return success(user.get());
+        }
+        else
+            return error(ResponseCode.USER_NOT_FOUND.getCode(), ResponseCode.USER_NOT_FOUND.getMessage());
     }
     
 }

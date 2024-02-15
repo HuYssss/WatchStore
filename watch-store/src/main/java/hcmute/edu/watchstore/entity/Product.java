@@ -20,8 +20,6 @@ public class Product {
 
     private String productName;
 
-    private double price;
-
     private String size;
 
     private String origin;
@@ -29,6 +27,4 @@ public class Product {
     private List<ObjectId> variantProducts;
 
     private ObjectId category;
-
-    private String state;
 }

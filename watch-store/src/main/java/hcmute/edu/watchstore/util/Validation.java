@@ -20,10 +20,13 @@ public class Validation {
         validate(userRequest);
 
         User parsedUser = new User();
+        parsedUser.setId(new ObjectId());
         parsedUser.setEmail(userRequest.getEmail());
         parsedUser.setPhone(userRequest.getPhone());
         parsedUser.setUsername(userRequest.getUsername());
         parsedUser.setPassword(userRequest.getPassword());
+        parsedUser.setToken(null);
+        parsedUser.setState("active");
         Set<Role> roles = new HashSet<>();
         Role role = new Role();
         role.setId(new ObjectId("65bb1b854c79c0063ff039e2"));

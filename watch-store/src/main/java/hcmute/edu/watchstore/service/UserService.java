@@ -10,4 +10,6 @@ public interface UserService {
     User findUserByUsername(String username);
     ResponseEntity<?> register(UserRequest userReq);
     ResponseEntity<?> login(LoginRequest loginReq);
+    ResponseEntity<?> generateTokenReset(String email);
+    ResponseEntity<?> resetPassword(String token, String password);
 }
