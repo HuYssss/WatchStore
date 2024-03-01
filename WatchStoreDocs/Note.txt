@@ -1,0 +1,5 @@
+Nếu mail không gửi dược -> Đổi pass ứng dụng trên mail
+
+Nếu thời gian kết nối với db quá lâu dễ bị hiện tượng disconnect -> Chạy lại app
+
+Khi tạo list trong entity mà không gán dữ liệu phải khai báo "= new ArrayList<>()"

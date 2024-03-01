@@ -1,6 +1,7 @@
 package hcmute.edu.watchstore.service.impl;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,6 +68,7 @@ public class UserServiceImpl extends ServiceBase implements UserService {
 
             Cart cart = new Cart();
             cart.setUser(saveUser.getId());
+            cart.setProductItems(new ArrayList<>());
             this.cartRepository.save(cart);
 
             saveUser.setCart(cart.getId());

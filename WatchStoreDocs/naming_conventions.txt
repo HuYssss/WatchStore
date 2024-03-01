@@ -1,0 +1,33 @@
+Tên lớp (Class Names):
+	Bắt đầu bằng một chữ cái in hoa.
+	Sử dụng kiểu CamelCase, tức là mỗi từ bắt đầu bằng một chữ cái in hoa, ví dụ: MyClass, PersonDetails.
+
+Tên phương thức (Method Names):
+	Bắt đầu bằng một chữ cái in thường.
+	Sử dụng kiểu CamelCase.
+	Mô tả chức năng của phương thức, ví dụ: calculateTotal(), getUserDetails().
+
+Tên biến (Variable Names):
+	Bắt đầu bằng một chữ cái in thường.
+	Sử dụng kiểu CamelCase.
+	Sử dụng tên biến mô tả mục đích của nó, ví dụ: count, userName.
+
+Hằng số (Constant Names):
+	Viết hoàn toàn bằng chữ in hoa, và sử dụng dấu gạch dưới _ để ngăn cách các từ.
+	Ví dụ: MAX_SIZE, PI.
+
+Gói (Package Names):
+	Sử dụng chữ thường hoàn toàn.
+	Sử dụng các tên gói ngắn gọn và mô tả chức năng của gói.
+	Ví dụ: com.example.project.
+
+Bí danh (Alias Names):
+	Bắt đầu bằng một chữ cái in thường.
+	Sử dụng kiểu CamelCase.
+	Tránh sử dụng tên rút gọn không rõ ràng, nếu có thể, hãy sử dụng tên rõ ràng.
+
+Tên lớp trừu tượng và giao diện (Abstract Class and Interface Names):
+	Tương tự như tên lớp, bắt đầu bằng một chữ cái in hoa và sử dụng kiểu CamelCase.
+
+Tên gói (Package Names):
+	Bắt đầu bằng một tên miền ngược (reverse domain), ví dụ: com.example.project.

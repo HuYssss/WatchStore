@@ -11,11 +11,8 @@ import org.springframework.stereotype.Service;
 
 import hcmute.edu.watchstore.base.ServiceBase;
 import hcmute.edu.watchstore.constants.ResponseCode;
-import hcmute.edu.watchstore.dto.response.ProductResponse;
 import hcmute.edu.watchstore.entity.Product;
-import hcmute.edu.watchstore.entity.VariantProduct;
 import hcmute.edu.watchstore.repository.ProductRepository;
-import hcmute.edu.watchstore.repository.VariantProductRepository;
 import hcmute.edu.watchstore.service.ProductService;
 
 @Service
@@ -24,35 +21,12 @@ public class ProductServiceImpl extends ServiceBase implements ProductService{
     @Autowired
     private ProductRepository productRepository;
 
-    @Autowired
-    private VariantProductRepository variantProductRepository;
-
     @Override
     public ResponseEntity<?> findProductById(ObjectId productId) {
-
-        if (productId == null) {
-            return error(ResponseCode.PRODUCT_NOT_FOUND.getCode(), ResponseCode.PRODUCT_NOT_FOUND.getMessage());
-        }
-
         Optional<Product> product = this.productRepository.findById(productId);
 
-        if (product.isPresent()) {
-            ProductResponse productResponse = new ProductResponse(product.get());
-
-            List<VariantProduct> variantProducts = new ArrayList<>();
-
-            for (ObjectId vPId : product.get().getVariantProducts()) {
-                if (vPId != null) {
-                    Optional<VariantProduct> vPS = this.variantProductRepository.findById(vPId);
-                    if (vPS.isPresent()) 
-                        variantProducts.add(vPS.get());
-                }
-            }
-
-            productResponse.setVariantProducts(variantProducts);
-            return success(productResponse);
-
-        }
+        if (product.isPresent()) 
+            return success(product.get());
         else
             return error(ResponseCode.PRODUCT_NOT_FOUND.getCode(), ResponseCode.PRODUCT_NOT_FOUND.getMessage());
     }

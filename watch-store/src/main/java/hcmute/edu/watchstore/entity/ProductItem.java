@@ -16,7 +16,7 @@ public class ProductItem {
     @Id
     private ObjectId id;
 
-    private ObjectId variantProduct;
+    private ObjectId product;
 
     private int quantity;
 }

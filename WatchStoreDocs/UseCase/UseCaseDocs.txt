@@ -1,0 +1,23 @@
+Guest:
+	Register
+	View Product
+	Find Product
+
+User:
+	Have Guest Role
+	Login
+	Manage Cart --> Add Product to Cart, View product, edit cart, purchase product
+	Manage User Detail --> edit & delete user detail, edit & delete address
+	Manage Order --> View user order, delete order
+	Forgot Password
+	Logout
+
+Admin:
+	Have User Role
+	Admin Login --> (After User Logined)
+	Manage Product --> Add new product, edit product, delete product, view product in system + view, add, delete, edit, variant product
+	Manage Category --> View category, add, remove, delete category, add & remove product to category
+	Manege Coupon --> view, add, remove, delete coupon, add product can use coupon
+	Manage Order --> view, change state
+	Manage User --> view detail user, block & delete user
+	Manage Admin Action

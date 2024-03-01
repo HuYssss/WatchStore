@@ -1,6 +1,7 @@
 package hcmute.edu.watchstore.util;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -25,6 +26,8 @@ public class Validation {
         parsedUser.setPhone(userRequest.getPhone());
         parsedUser.setUsername(userRequest.getUsername());
         parsedUser.setPassword(userRequest.getPassword());
+        parsedUser.setAddress(new ArrayList<>());
+        parsedUser.setOrder(new ArrayList<>());
         parsedUser.setToken(null);
         parsedUser.setState("active");
         Set<Role> roles = new HashSet<>();
