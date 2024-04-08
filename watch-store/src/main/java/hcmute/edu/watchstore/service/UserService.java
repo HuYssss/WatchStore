@@ -1,5 +1,6 @@
 package hcmute.edu.watchstore.service;
 
+import org.bson.types.ObjectId;
 import org.springframework.http.ResponseEntity;
 
 import hcmute.edu.watchstore.dto.request.LoginRequest;
@@ -12,4 +13,5 @@ public interface UserService {
     ResponseEntity<?> login(LoginRequest loginReq);
     ResponseEntity<?> generateTokenReset(String email);
     ResponseEntity<?> resetPassword(String token, String password);
+    ResponseEntity<?> editUserDetail(UserRequest userReq, ObjectId userId);
 }

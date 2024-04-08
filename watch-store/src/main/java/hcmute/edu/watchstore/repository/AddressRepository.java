@@ -6,7 +6,8 @@ import org.springframework.stereotype.Repository;
 
 import hcmute.edu.watchstore.entity.Address;
 
+
 @Repository
 public interface AddressRepository extends MongoRepository<Address, ObjectId> {
-    
+    Iterable<Address> findByUser(ObjectId user);
 }

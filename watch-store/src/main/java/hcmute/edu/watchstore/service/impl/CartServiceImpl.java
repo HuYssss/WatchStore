@@ -9,9 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.mongodb.MongoException;
+
 import hcmute.edu.watchstore.base.ServiceBase;
 import hcmute.edu.watchstore.constants.ResponseCode;
-import hcmute.edu.watchstore.dto.response.CartResponse;
+import hcmute.edu.watchstore.dto.response.ProductItemResponse;
 import hcmute.edu.watchstore.entity.Cart;
 import hcmute.edu.watchstore.entity.ProductItem;
 import hcmute.edu.watchstore.repository.CartRepository;
@@ -29,46 +31,86 @@ public class CartServiceImpl extends ServiceBase implements CartService {
 
     @Override
     public ResponseEntity<?> addProductToCart(ProductItem productItem, ObjectId userId) {
-        Optional<Cart> userCart = this.cartRepository.findByUser(userId);
+        if (handleManageProductInCart(productItem, getCartUser(userId)))
+            return success("Add product to cart success !!!");
 
-        if (!userCart.isPresent()) {
-            return error(ResponseCode.USER_NOT_FOUND.getCode(), ResponseCode.USER_NOT_FOUND.getMessage());
-        }
-    
-        try {
-            ObjectId productItemId = this.productItemService.createProductItem(productItem);
-
-            userCart.get().getProductItems().add(productItemId);
-
-            this.cartRepository.save(userCart.get());
-
-            return success(productItem);
-
-        } catch (Exception e) {
-            return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
-        }
-            
+        return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
     }
 
+    // complete
     @Override
     public ResponseEntity<?> findCartByUser(ObjectId userId) {
-        Optional<Cart> userCart = this.cartRepository.findByUser(userId);
-        if (userCart.isPresent()) {
-            CartResponse cartResp = new CartResponse();
-            List<ProductItem> itemList = new ArrayList<>();
+        Cart cartUser = getCartUser(userId);
+        
+        List<ProductItemResponse> responses = getProductItemResp(cartUser.getProductItems());
 
-            for(ObjectId id : userCart.get().getProductItems()) {
-                ProductItem item = this.productItemService.findProductItem(id);
-                if (item != null) 
-                    itemList.add(item);
-            }
-
-            cartResp.setProductItems(itemList);
-
-            return success(cartResp);
-        }
+        if (!responses.isEmpty()) 
+            return success(responses);
         else
             return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage());
     }
-    
+
+    @Override
+    public ResponseEntity<?> editProductToCart(ProductItem productItem, ObjectId userId) {
+        if (handleManageProductInCart(productItem, getCartUser(userId)))
+            return success("Edit cart success !!!");
+
+        return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
+    }
+
+
+    // helper funtion
+    public List<ProductItemResponse> getProductItemResp(List<ObjectId> pItemId) {
+        List<ProductItemResponse> itemResp = new ArrayList<>();
+
+        for (ObjectId id : pItemId) {
+            ProductItemResponse productResp = this.productItemService.findProductItemResponse(id);
+            itemResp.add(productResp);
+        }
+
+        return itemResp;
+    }
+
+    public Cart getCartUser(ObjectId userId) {
+        Optional<Cart> userCart = this.cartRepository.findByUser(userId);
+        return userCart.orElse(null);
+    }
+
+    public boolean handleManageProductInCart(ProductItem productItem, Cart userCart) {
+        List<ProductItemResponse> cartResp = getProductItemResp(userCart.getProductItems());
+        boolean itemPresent = false;
+        for (ProductItemResponse resp : cartResp) {
+
+            if (resp.getId().equals(productItem.getId())) {
+                itemPresent = true;
+                break;
+            }
+            else if (resp.getProduct().getId().equals(productItem.getProduct())) {
+                productItem.setId(resp.getId());
+                productItem.setQuantity(productItem.getQuantity() + resp.getQuantity());
+            }
+        }
+
+
+        List<ObjectId> newItem = userCart.getProductItems();
+
+        // delete product item and handle delete in user's cart
+        if (itemPresent == true && productItem.getQuantity() == 0 && this.productItemService.deleteItem(productItem.getId())) {
+            newItem.remove(productItem.getId());
+        } else {
+            ObjectId newId = this.productItemService.saveOrEditItem(productItem);
+            if (itemPresent == false) {
+                newItem.add(newId);
+            }
+        }
+        
+        // update cart user
+        try {
+            userCart.setProductItems(newItem);
+            this.cartRepository.save(userCart);
+            return true;
+        } catch (MongoException e) {
+            return false;
+        }
+    }
 }

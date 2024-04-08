@@ -33,6 +33,7 @@ public class Validation {
         Set<Role> roles = new HashSet<>();
         Role role = new Role();
         role.setId(new ObjectId("65bb1b854c79c0063ff039e2"));
+        role.setRoleName("USER");
         roles.add(role);
         parsedUser.setRole(roles);
         return parsedUser;

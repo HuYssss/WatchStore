@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import hcmute.edu.watchstore.entity.ProductItem;
 
 public interface CartService {
-    ResponseEntity<?> addProductToCart(ProductItem productIt, ObjectId userId);
+    ResponseEntity<?> addProductToCart(ProductItem productItem, ObjectId userId);
     ResponseEntity<?> findCartByUser(ObjectId userId);
+    ResponseEntity<?> editProductToCart(ProductItem productItem, ObjectId userId);
 }

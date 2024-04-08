@@ -6,27 +6,36 @@ import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.mongodb.MongoException;
+
 import hcmute.edu.watchstore.base.ServiceBase;
+import hcmute.edu.watchstore.dto.response.ProductItemResponse;
+import hcmute.edu.watchstore.entity.Product;
 import hcmute.edu.watchstore.entity.ProductItem;
 import hcmute.edu.watchstore.repository.ProductItemRepository;
 import hcmute.edu.watchstore.service.ProductItemService;
+import hcmute.edu.watchstore.service.ProductService;
 
 @Service
 public class ProductItemServiceImpl extends ServiceBase implements ProductItemService {
 
     @Autowired
     private ProductItemRepository productItemRepository;
+    
+    @Autowired
+    private ProductService productService;
 
     @Override
-    public ObjectId createProductItem(ProductItem pItem) {
+    public ObjectId saveOrEditItem(ProductItem pItem) {
         
-        ObjectId itemId = new ObjectId();
-
-        pItem.setId(itemId);
+        if (pItem.getId() == null) {
+            ObjectId itemId = new ObjectId();
+            pItem.setId(itemId);
+        }
 
         try {
             this.productItemRepository.save(pItem);
-            return itemId;
+            return pItem.getId();
         } catch(Exception e) {
             return null;
         }
@@ -36,10 +45,35 @@ public class ProductItemServiceImpl extends ServiceBase implements ProductItemSe
     @Override
     public ProductItem findProductItem(ObjectId itemId) {
         Optional<ProductItem> item = this.productItemRepository.findById(itemId);
-        if (item.isPresent()) 
-            return item.get();
+        return item.orElse(null);
+    }
+
+    @Override
+    public ProductItemResponse findProductItemResponse(ObjectId itemId) {
+        ProductItemResponse productItemResponse = new ProductItemResponse();
+        ProductItem item = findProductItem(itemId);
+        Product product = this.productService.findProduct(item.getProduct());
+        if (item != null && product != null) {
+            productItemResponse.setId(itemId);
+            productItemResponse.setProduct(product);
+            productItemResponse.setQuantity(item.getQuantity());
+            return productItemResponse;
+        }
         else
             return null;
+
+        
+    }
+
+    @SuppressWarnings("null")
+    @Override
+    public boolean deleteItem(ObjectId itemId) {
+        try {
+            this.productItemRepository.deleteById(itemId);
+            return true;
+        } catch (MongoException e) {
+            return false;
+        }
     }
     
 }

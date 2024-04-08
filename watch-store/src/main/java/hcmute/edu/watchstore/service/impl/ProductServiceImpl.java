@@ -23,10 +23,10 @@ public class ProductServiceImpl extends ServiceBase implements ProductService{
 
     @Override
     public ResponseEntity<?> findProductById(ObjectId productId) {
-        Optional<Product> product = this.productRepository.findById(productId);
+        Product product = findProduct(productId);
 
-        if (product.isPresent()) 
-            return success(product.get());
+        if (product != null) 
+            return success(product);
         else
             return error(ResponseCode.PRODUCT_NOT_FOUND.getCode(), ResponseCode.PRODUCT_NOT_FOUND.getMessage());
     }
@@ -46,5 +46,33 @@ public class ProductServiceImpl extends ServiceBase implements ProductService{
         else
             return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage());
     }
-    
+
+    @Override
+    @SuppressWarnings("null")
+    public Product findProduct(ObjectId id) {
+        Optional<Product> product = this.productRepository.findById(id);
+        return product.orElse(null);
+    }
+
+    @Override
+    public ObjectId saveOrUpdate(Product product) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'saveOrUpdate'");
+    }
+
+    @Override
+    public boolean delete(ObjectId objectId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'delete'");
+    }
+
+    @Override
+    public ResponseEntity<?> findAll() {
+        return success(this.productRepository.findAll());
+    }
+
+    @Override
+    public long countAll() {
+        return this.productRepository.count();
+    }
 }

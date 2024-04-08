@@ -2,6 +2,14 @@ UC001-Register
 UC002-ViewProductDetail
 UC003-FindProduct
 UC004-Login
-UC011-ForgotPassword
+UC009-ForgotPassword
+UC005-ManageProductInCart
+- View
+- Add product		(Gửi xuống API ProductItem nhưng id null)
+	=> Có 2 trường hợp (Product đã tồn tại và chưa tồn tại)
+- Edit productItem	(Gửi xuống API ProductItem có id nếu là delete product thì gửi với quantity = 0)
 
-UC005 is developing
+Bug: khi add sản phẩm đã có sẵn trong cart thì lại tăng số item ở cart
+
+UC006-EditUserDetail
+UC007-ManageUserAddress

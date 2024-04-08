@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Optional;
 
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,6 +12,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+
+import com.mongodb.MongoException;
 
 import hcmute.edu.watchstore.base.ServiceBase;
 import hcmute.edu.watchstore.constants.ResponseCode;
@@ -150,6 +153,22 @@ public class UserServiceImpl extends ServiceBase implements UserService {
         }
         else
             return error(ResponseCode.USER_NOT_FOUND.getCode(), ResponseCode.USER_NOT_FOUND.getMessage());
+    }
+
+    @Override
+    public ResponseEntity<?> editUserDetail(UserRequest userReq, ObjectId userId) {
+        User currentUser = this.userRepository.findById(userId).get();
+
+        currentUser.setEmail(userReq.getEmail());
+        currentUser.setPhone(userReq.getPhone());
+        currentUser.setUsername(userReq.getUsername());
+        
+        try {
+            this.userRepository.save(currentUser);
+            return success(currentUser);
+        } catch (MongoException e) {
+            return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
+        }
     }
     
 }
