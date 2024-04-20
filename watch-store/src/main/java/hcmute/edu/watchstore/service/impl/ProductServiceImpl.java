@@ -48,7 +48,6 @@ public class ProductServiceImpl extends ServiceBase implements ProductService{
     }
 
     @Override
-    @SuppressWarnings("null")
     public Product findProduct(ObjectId id) {
         Optional<Product> product = this.productRepository.findById(id);
         return product.orElse(null);

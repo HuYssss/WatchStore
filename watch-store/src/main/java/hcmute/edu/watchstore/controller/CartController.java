@@ -14,8 +14,7 @@ import hcmute.edu.watchstore.base.ControllerBase;
 import hcmute.edu.watchstore.entity.ProductItem;
 import hcmute.edu.watchstore.service.CartService;
 
-@RestController
-@RequestMapping("/cart")
+
 public class CartController extends ControllerBase{
     
     @Autowired
@@ -29,5 +28,16 @@ public class CartController extends ControllerBase{
     @GetMapping("")
     public ResponseEntity<?> findCartByUser(Principal principal) {
         return this.cartService.findCartByUser(findIdByUsername(principal.getName()));
+    }
+
+    @PostMapping("/editProductInCart")
+    public ResponseEntity<?> editProductInCart(@RequestBody ProductItem productItem, Principal principal) {
+        return this.cartService.editProductInCart(productItem, findIdByUsername(principal.getName()));
+    }
+
+    @PostMapping("/deleteProduct")
+    public ResponseEntity<?> deleteProductInCart(@RequestBody ProductItem productItem, Principal principal) {
+        productItem.setQuantity(0);
+        return this.cartService.deleteProductInCart(productItem, findIdByUsername(principal.getName()));
     }
 }

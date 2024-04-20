@@ -14,4 +14,5 @@ public interface UserService {
     ResponseEntity<?> generateTokenReset(String email);
     ResponseEntity<?> resetPassword(String token, String password);
     ResponseEntity<?> editUserDetail(UserRequest userReq, ObjectId userId);
+    ResponseEntity<?> getUserDetail(ObjectId userId);
 }

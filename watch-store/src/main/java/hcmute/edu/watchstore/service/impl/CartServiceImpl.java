@@ -51,11 +51,17 @@ public class CartServiceImpl extends ServiceBase implements CartService {
     }
 
     @Override
-    public ResponseEntity<?> editProductToCart(ProductItem productItem, ObjectId userId) {
-        if (handleManageProductInCart(productItem, getCartUser(userId)))
-            return success("Edit cart success !!!");
+    public ResponseEntity<?> editProductInCart(ProductItem productItem, ObjectId userId) {
+        ProductItem item = this.productItemService.findProductItem(productItem.getId());
+        if (item != null) {
+            item.setProduct(productItem.getProduct());
+            item.setQuantity(productItem.getQuantity());
+            this.productItemService.saveOrEditItem(item);
 
-        return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
+            return success("Edit product item success !!!");
+        }
+        else
+            return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage());
     }
 
 
@@ -80,22 +86,17 @@ public class CartServiceImpl extends ServiceBase implements CartService {
         List<ProductItemResponse> cartResp = getProductItemResp(userCart.getProductItems());
         boolean itemPresent = false;
         for (ProductItemResponse resp : cartResp) {
-
-            if (resp.getId().equals(productItem.getId())) {
+            if (resp.getProduct().getId().equals(productItem.getProduct())) {
                 itemPresent = true;
-                break;
-            }
-            else if (resp.getProduct().getId().equals(productItem.getProduct())) {
                 productItem.setId(resp.getId());
                 productItem.setQuantity(productItem.getQuantity() + resp.getQuantity());
             }
         }
 
-
         List<ObjectId> newItem = userCart.getProductItems();
 
         // delete product item and handle delete in user's cart
-        if (itemPresent == true && productItem.getQuantity() == 0 && this.productItemService.deleteItem(productItem.getId())) {
+        if (productItem.getQuantity() == 0 && this.productItemService.deleteItem(productItem.getId())) {
             newItem.remove(productItem.getId());
         } else {
             ObjectId newId = this.productItemService.saveOrEditItem(productItem);
@@ -112,5 +113,13 @@ public class CartServiceImpl extends ServiceBase implements CartService {
         } catch (MongoException e) {
             return false;
         }
+    }
+
+    @Override
+    public ResponseEntity<?> deleteProductInCart(ProductItem productItem, ObjectId userId) {
+        if (handleManageProductInCart(productItem, getCartUser(userId)))
+            return success("Delete product in cart success !!!");
+
+        return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
     }
 }

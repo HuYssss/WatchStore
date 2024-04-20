@@ -161,7 +161,6 @@ public class UserServiceImpl extends ServiceBase implements UserService {
 
         currentUser.setEmail(userReq.getEmail());
         currentUser.setPhone(userReq.getPhone());
-        currentUser.setUsername(userReq.getUsername());
         
         try {
             this.userRepository.save(currentUser);
@@ -169,6 +168,12 @@ public class UserServiceImpl extends ServiceBase implements UserService {
         } catch (MongoException e) {
             return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
         }
+    }
+
+    @Override
+    public ResponseEntity<?> getUserDetail(ObjectId userId) {
+        Optional<User> user = this.userRepository.findById(userId);
+        return success(user.orElse(null));
     }
     
 }

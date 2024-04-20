@@ -50,22 +50,11 @@ public class ProductItemServiceImpl extends ServiceBase implements ProductItemSe
 
     @Override
     public ProductItemResponse findProductItemResponse(ObjectId itemId) {
-        ProductItemResponse productItemResponse = new ProductItemResponse();
         ProductItem item = findProductItem(itemId);
         Product product = this.productService.findProduct(item.getProduct());
-        if (item != null && product != null) {
-            productItemResponse.setId(itemId);
-            productItemResponse.setProduct(product);
-            productItemResponse.setQuantity(item.getQuantity());
-            return productItemResponse;
-        }
-        else
-            return null;
-
-        
+        return new ProductItemResponse(item.getId(), product, item.getQuantity());
     }
 
-    @SuppressWarnings("null")
     @Override
     public boolean deleteItem(ObjectId itemId) {
         try {
