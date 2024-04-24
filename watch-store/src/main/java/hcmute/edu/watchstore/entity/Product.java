@@ -1,5 +1,7 @@
 package hcmute.edu.watchstore.entity;
 
+import java.util.List;
+
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -18,17 +20,37 @@ public class Product {
 
     private String productName;
 
-    private String img;
+    private List<String> img;
 
     private double price;
 
+    private String brand;
+
+    private String origin;
+
+    private String thickness;
+
     private String size;
 
-    private String color;
+    private String wireMaterial;
 
-    private String brand;
-    
-    private String origin;
+    private String shellMaterial;
+
+    private String style;
+
+    private String feature;
+
+    private String shape;
+
+    private String condition;
+
+    private String height;
+
+    private String genderUser;
+
+    private String description;
+
+    private String color;
 
     private ObjectId category;
 

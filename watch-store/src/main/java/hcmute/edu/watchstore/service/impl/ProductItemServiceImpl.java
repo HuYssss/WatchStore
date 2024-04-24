@@ -1,5 +1,7 @@
 package hcmute.edu.watchstore.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.bson.types.ObjectId;
@@ -49,10 +51,25 @@ public class ProductItemServiceImpl extends ServiceBase implements ProductItemSe
     }
 
     @Override
-    public ProductItemResponse findProductItemResponse(ObjectId itemId) {
-        ProductItem item = findProductItem(itemId);
-        Product product = this.productService.findProduct(item.getProduct());
-        return new ProductItemResponse(item.getId(), product, item.getQuantity());
+    public List<ProductItemResponse> findProductItemResponse(List<ObjectId> itemId) {
+        List<ProductItem> items = this.productItemRepository.findAll();
+        List<Product> products = this.productService.findAll();
+        List<ProductItemResponse> responses = new ArrayList<>();
+        if (items.isEmpty() || products.isEmpty()) 
+            return null;
+        for (ObjectId id : itemId) {
+            ProductItem item = findItem(id, items);
+            if (item != null) {
+                ProductItemResponse response = new ProductItemResponse(
+                    item.getId(),
+                    findProduct(item.getProduct(), products),
+                    item.getQuantity()
+                );
+                responses.add(response);
+            }
+        }
+        return responses;
+        
     }
 
     @Override
@@ -65,4 +82,17 @@ public class ProductItemServiceImpl extends ServiceBase implements ProductItemSe
         }
     }
     
+    public ProductItem findItem(ObjectId id, List<ProductItem> items) {
+        return items.stream()
+                .filter(item -> item.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public Product findProduct(ObjectId id, List<Product> products) {
+        return products.stream()
+                 .filter(product -> product.getId().equals(id))
+                 .findFirst()
+                 .orElse(null);
+    }
 }

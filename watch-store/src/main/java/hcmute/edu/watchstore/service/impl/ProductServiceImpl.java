@@ -55,23 +55,27 @@ public class ProductServiceImpl extends ServiceBase implements ProductService{
 
     @Override
     public ObjectId saveOrUpdate(Product product) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'saveOrUpdate'");
+        return null;
     }
 
     @Override
     public boolean delete(ObjectId objectId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'delete'");
+        return false;
     }
 
     @Override
-    public ResponseEntity<?> findAll() {
-        return success(this.productRepository.findAll());
+    public ResponseEntity<?> getAll() {
+        return success(findAll());
     }
 
     @Override
     public long countAll() {
         return this.productRepository.count();
+    }
+
+    @Override
+    public List<Product> findAll() {
+        List<Product> list = this.productRepository.findAll();
+        return (list.isEmpty()) ? null : list;
     }
 }

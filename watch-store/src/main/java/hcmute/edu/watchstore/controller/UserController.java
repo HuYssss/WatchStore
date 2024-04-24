@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import hcmute.edu.watchstore.base.ControllerBase;
 import hcmute.edu.watchstore.dto.request.UserRequest;
+import hcmute.edu.watchstore.service.AddressService;
 import hcmute.edu.watchstore.service.UserService;
 
 @RestController
@@ -28,5 +29,10 @@ public class UserController extends ControllerBase {
     @GetMapping("")
     public ResponseEntity<?> getUserDetail(Principal principal) {
         return this.userService.getUserDetail(findIdByUsername(principal.getName()));
+    }
+
+    @GetMapping("/testToken")
+    public String testToken(Principal principal) {
+        return "Hello " + principal.getName();
     }
 }

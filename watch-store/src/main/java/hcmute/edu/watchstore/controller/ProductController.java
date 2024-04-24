@@ -34,9 +34,9 @@ public class ProductController {
         return "You are Admin !!!";
     }
 
-    @GetMapping("/findAll")
+    @GetMapping("/getAll")
     public ResponseEntity<?> findAllProduct() {
-        return this.productService.findAll();
+        return this.productService.getAll();
     }
 
     @GetMapping("/count")

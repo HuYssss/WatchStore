@@ -67,14 +67,7 @@ public class CartServiceImpl extends ServiceBase implements CartService {
 
     // helper funtion
     public List<ProductItemResponse> getProductItemResp(List<ObjectId> pItemId) {
-        List<ProductItemResponse> itemResp = new ArrayList<>();
-
-        for (ObjectId id : pItemId) {
-            ProductItemResponse productResp = this.productItemService.findProductItemResponse(id);
-            itemResp.add(productResp);
-        }
-
-        return itemResp;
+        return this.productItemService.findProductItemResponse(pItemId);
     }
 
     public Cart getCartUser(ObjectId userId) {

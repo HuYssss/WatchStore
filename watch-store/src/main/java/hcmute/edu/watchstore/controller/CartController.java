@@ -14,7 +14,8 @@ import hcmute.edu.watchstore.base.ControllerBase;
 import hcmute.edu.watchstore.entity.ProductItem;
 import hcmute.edu.watchstore.service.CartService;
 
-
+@RestController
+@RequestMapping("/cart")
 public class CartController extends ControllerBase{
     
     @Autowired

@@ -44,7 +44,8 @@ public class AddressServiceImpl extends ServiceBase implements AddressService{
 
             try {
                 this.addressRepository.save(newAddress);
-                return success(newAddress);
+                handleManageAddressUser(newAddress.getId(), userId, "create");
+                return success("Add new address success !!!");
             } catch (Exception e) {
                 return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
             }
@@ -68,7 +69,7 @@ public class AddressServiceImpl extends ServiceBase implements AddressService{
 
             try {
                 this.addressRepository.save(newAddress);
-                return success(newAddress);
+                return success("Edit address success !!!");
             } catch (Exception e) {
                 return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
             }
@@ -85,7 +86,7 @@ public class AddressServiceImpl extends ServiceBase implements AddressService{
         }
 
         try {
-            handleDeleteAddressUser(addressId, userId);
+            handleManageAddressUser(addressId, userId, "delete");
             this.addressRepository.deleteById(addressId);
             return success("Delete address success !!!");
         } catch (Exception e) {
@@ -93,23 +94,26 @@ public class AddressServiceImpl extends ServiceBase implements AddressService{
         }
     }
     
-    public boolean handleDeleteAddressUser(ObjectId addressId, ObjectId userId) {
+    public boolean handleManageAddressUser(ObjectId addressId, ObjectId userId, String message) {
         Optional<User> currentUser = this.userRepository.findById(userId);
 
         if (currentUser.isPresent()) {
             try {
                 List<ObjectId> addresses = currentUser.get().getAddress();
-                if (addresses.remove(addressId)) {
-                    currentUser.get().setAddress(addresses);
-                    this.userRepository.save(currentUser.get());
-                    return true;
-                }
-                return false;
+
+                if (message.equals("delete")) 
+                    addresses.remove(addressId);
+
+                if (message.equals("create")) 
+                    addresses.add(addressId);
+                    
+                currentUser.get().setAddress(addresses);
+                this.userRepository.save(currentUser.get());
+                return true;
             } catch (Exception e) {
                 return false;
             }
         }
-
         return false;
     }
 }

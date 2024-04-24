@@ -1,5 +1,7 @@
 package hcmute.edu.watchstore.service;
 
+import java.util.List;
+
 import org.bson.types.ObjectId;
 import org.springframework.http.ResponseEntity;
 
@@ -11,6 +13,7 @@ public interface ProductService {
     Product findProduct(ObjectId id);
     ObjectId saveOrUpdate(Product product);
     boolean delete(ObjectId objectId);
-    ResponseEntity<?> findAll();
+    ResponseEntity<?> getAll();
+    List<Product> findAll();
     long countAll();
 }
