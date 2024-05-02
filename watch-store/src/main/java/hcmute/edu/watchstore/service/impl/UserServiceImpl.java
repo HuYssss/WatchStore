@@ -178,13 +178,22 @@ public class UserServiceImpl extends ServiceBase implements UserService {
     @Override
     public ResponseEntity<?> editUserDetail(UserRequest userReq, ObjectId userId) {
         User currentUser = this.userRepository.findById(userId).get();
-
-        currentUser.setEmail(userReq.getEmail());
-        currentUser.setPhone(userReq.getPhone());
-        currentUser.setAvatarImg(userReq.getAvatarImg());
-        currentUser.setBackgroundImg(userReq.getBackgroundImg());
-        currentUser.setFirstname(userReq.getFirstname());
-        currentUser.setLastname(userReq.getLastname());
+        
+        if (userReq.getPhone() != null) {
+            currentUser.setPhone(userReq.getPhone());
+        }
+        if (userReq.getAvatarImg() != null) {
+            currentUser.setAvatarImg(userReq.getAvatarImg());
+        }
+        if (userReq.getBackgroundImg() != null) {
+            currentUser.setBackgroundImg(userReq.getBackgroundImg());
+        }
+        if (userReq.getFirstname() != null) {
+            currentUser.setFirstname(userReq.getFirstname());
+        }
+        if (userReq.getLastname() != null) {
+            currentUser.setLastname(userReq.getLastname());
+        }
         
         try {
             this.userRepository.save(currentUser);
