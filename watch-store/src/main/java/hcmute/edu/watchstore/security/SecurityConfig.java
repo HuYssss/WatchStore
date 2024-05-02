@@ -1,7 +1,5 @@
 package hcmute.edu.watchstore.security;
 
-import java.util.Arrays;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,8 +15,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 
 @Configuration
@@ -60,6 +56,10 @@ public class SecurityConfig {
                 .permitAll()
                 .and()
                 .authorizeHttpRequests()
+                .requestMatchers("/cart")
+                .hasAnyRole("USER")
+                .and()
+                .authorizeHttpRequests()
                 .requestMatchers("/users")
                 .hasAnyRole("ADMIN")
                 .and()
@@ -69,6 +69,7 @@ public class SecurityConfig {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authenticationProvider(authenticationProvider(userDetailsService))
-                .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class).build();
+                .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)
+                .build();
     }
 }

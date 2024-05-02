@@ -26,14 +26,13 @@ public class Validation {
         parsedUser.setPhone(userRequest.getPhone());
         parsedUser.setUsername(userRequest.getUsername());
         parsedUser.setPassword(userRequest.getPassword());
+        parsedUser.setUserImg(new ArrayList<>());
         parsedUser.setAddress(new ArrayList<>());
         parsedUser.setOrder(new ArrayList<>());
-        parsedUser.setToken(null);
         parsedUser.setState("active");
         Set<Role> roles = new HashSet<>();
         Role role = new Role();
         role.setId(new ObjectId("65bb1b854c79c0063ff039e2"));
-        role.setRoleName("USER");
         roles.add(role);
         parsedUser.setRole(roles);
         return parsedUser;

@@ -9,9 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.mongodb.MongoException;
+
 import hcmute.edu.watchstore.base.ServiceBase;
 import hcmute.edu.watchstore.constants.ResponseCode;
+import hcmute.edu.watchstore.entity.Category;
 import hcmute.edu.watchstore.entity.Product;
+import hcmute.edu.watchstore.repository.CategoryRepository;
 import hcmute.edu.watchstore.repository.ProductRepository;
 import hcmute.edu.watchstore.service.ProductService;
 
@@ -20,6 +24,9 @@ public class ProductServiceImpl extends ServiceBase implements ProductService{
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     @Override
     public ResponseEntity<?> findProductById(ObjectId productId) {
@@ -53,14 +60,72 @@ public class ProductServiceImpl extends ServiceBase implements ProductService{
         return product.orElse(null);
     }
 
-    @Override
     public ObjectId saveOrUpdate(Product product) {
-        return null;
+
+        if (product.getId() == null) 
+            product.setId(new ObjectId());
+        
+        try {
+            this.productRepository.save(product);
+            return product.getId();
+        } catch (MongoException e) {
+            return null;
+        }
     }
 
     @Override
-    public boolean delete(ObjectId objectId) {
-        return false;
+    public ResponseEntity<?> delete(ObjectId objectId) {
+        Optional<Product> product = this.productRepository.findById(objectId);
+        if (product.isPresent()) {
+            this.productRepository.deleteById(objectId);
+            handleManageProduct(objectId, product.get().getCategory(), "delete");
+            return success("Delete product success !!!");
+        }
+        return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage());
+    }
+
+    @Override
+    public ResponseEntity<?> createOrUpdateProduct(Product product) {
+        if (product.getCategory() == null) 
+            product.setCategory(new ObjectId("662a058d43948d98f91010b8"));
+
+        if (product.getState() == null)
+            product.setState("saling");
+
+        ObjectId productId = saveOrUpdate(product);
+        if (productId != null) {
+            handleManageProduct(productId, product.getCategory(), "add");
+            return success("Create new product success !!!");
+        }
+        return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
+    }
+
+    @Override
+    public ResponseEntity<?> addProductToCategory(ObjectId productId, ObjectId categoryId) {
+        Optional<Product> product = this.productRepository.findById(productId);
+        if (product.isPresent()) {
+            if (product.get().getCategory() != null) {
+                Category currentCategory = this.categoryRepository.findById(product.get().getCategory()).orElse(null);
+                if (currentCategory != null) {
+                    List<ObjectId> products = currentCategory.getProduct();
+                    products.remove(productId);
+                    currentCategory.setProduct(products);
+                    this.categoryRepository.save(currentCategory);
+                } 
+                else
+                    return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
+            }
+
+            try {
+                product.get().setCategory(categoryId);
+                saveOrUpdate(product.get());
+                handleManageProduct(productId, categoryId, "add");
+                return success("Add product to category success !!!");
+            } catch (MongoException e) {
+                return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
+            }
+        }
+        return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage());
     }
 
     @Override
@@ -77,5 +142,25 @@ public class ProductServiceImpl extends ServiceBase implements ProductService{
     public List<Product> findAll() {
         List<Product> list = this.productRepository.findAll();
         return (list.isEmpty()) ? null : list;
+    }
+
+    public void handleManageProduct(ObjectId productId, ObjectId categoryId, String message) {
+        Optional<Category> category = this.categoryRepository.findById(categoryId);
+        List<ObjectId> productList = category.get().getProduct();
+        if (category != null) {
+
+            if (message.equals("delete")) 
+                productList.remove(productId);
+
+            if (message.equals("add")) 
+                productList.add(productId);
+            
+            try {
+                category.get().setProduct(productList);
+                this.categoryRepository.save(category.get());
+            } catch (MongoException e) {
+                throw new MongoException("Can't update category !!!");
+            }
+        }
     }
 }

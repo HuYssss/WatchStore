@@ -8,12 +8,14 @@ import org.springframework.http.ResponseEntity;
 import hcmute.edu.watchstore.entity.Product;
 
 public interface ProductService {
-    ResponseEntity<?> findProductById(ObjectId productId);
-    ResponseEntity<?> findProductByKeyword(String keyword);
-    Product findProduct(ObjectId id);
     ObjectId saveOrUpdate(Product product);
-    boolean delete(ObjectId objectId);
-    ResponseEntity<?> getAll();
+    Product findProduct(ObjectId id);
     List<Product> findAll();
     long countAll();
+    ResponseEntity<?> findProductById(ObjectId productId);
+    ResponseEntity<?> findProductByKeyword(String keyword);
+    ResponseEntity<?> addProductToCategory(ObjectId productId, ObjectId categoryId);
+    ResponseEntity<?> createOrUpdateProduct(Product product);
+    ResponseEntity<?> delete(ObjectId objectId);
+    ResponseEntity<?> getAll();
 }

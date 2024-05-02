@@ -94,7 +94,7 @@ public class AddressServiceImpl extends ServiceBase implements AddressService{
         }
     }
     
-    public boolean handleManageAddressUser(ObjectId addressId, ObjectId userId, String message) {
+    public void handleManageAddressUser(ObjectId addressId, ObjectId userId, String message) throws Exception {
         Optional<User> currentUser = this.userRepository.findById(userId);
 
         if (currentUser.isPresent()) {
@@ -109,11 +109,14 @@ public class AddressServiceImpl extends ServiceBase implements AddressService{
                     
                 currentUser.get().setAddress(addresses);
                 this.userRepository.save(currentUser.get());
-                return true;
             } catch (Exception e) {
-                return false;
+                throw new Exception(e);
             }
         }
-        return false;
+    }
+
+    @Override
+    public Address findAddressById(ObjectId addressId) {
+        return this.addressRepository.findById(addressId).orElse(null);
     }
 }

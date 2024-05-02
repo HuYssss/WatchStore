@@ -1,5 +1,4 @@
 package hcmute.edu.watchstore.dto.request;
-
 import lombok.*;
 
 @Data
@@ -10,4 +9,8 @@ public class UserRequest {
 	private String phone;
 	private String username;
 	private String password;
+	private String firstname;
+    private String lastname;
+    private String avatarImg;
+    private String backgroundImg;
 }

@@ -1,6 +1,7 @@
 package hcmute.edu.watchstore.entity;
 
-import java.sql.Date;
+
+import java.util.Date;
 import java.util.List;
 
 import org.bson.types.ObjectId;
@@ -22,8 +23,6 @@ public class Order {
     private Date orderDate;
 
     private double totalPrice;
-
-    private ObjectId coupon;
 
     private List<ObjectId> productItems;
 

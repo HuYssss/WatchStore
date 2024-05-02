@@ -12,13 +12,11 @@ import hcmute.edu.watchstore.entity.User;
 
 public class CustomUserDetail implements UserDetails {
 
-    private final String username;
-    private final String password;
+    private final User user;
     private final Set<GrantedAuthority> authorities;
 
     public CustomUserDetail(User user) {
-        this.username = user.getUsername();
-        this.password = user.getPassword();
+        this.user = user;
         this.authorities = user.getRole().stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getRoleName())).collect(Collectors.toSet());
     }
@@ -30,12 +28,12 @@ public class CustomUserDetail implements UserDetails {
 
     @Override
     public String getPassword() {
-        return password;
+        return this.user.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return username;
+        return this.user.getUsername();
     }
 
     @Override
@@ -45,6 +43,9 @@ public class CustomUserDetail implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
+        if (user.getState().equals("block")) {
+            return false;
+        }
         return true;
     }
 
@@ -55,7 +56,10 @@ public class CustomUserDetail implements UserDetails {
 
     @Override
     public boolean isEnabled() {
+        if (user.getState().equals("online")) {
+            return false;
+        }
         return true;
     }
-    
+
 }

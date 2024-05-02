@@ -4,7 +4,7 @@ import java.security.Principal;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 import hcmute.edu.watchstore.dto.request.LoginRequest;
 import hcmute.edu.watchstore.dto.request.UserRequest;
 import hcmute.edu.watchstore.service.UserService;
+import org.springframework.web.bind.annotation.GetMapping;
+
 
 
 @RestController
@@ -40,5 +42,17 @@ public class AuthController {
     @PostMapping("/resetPassword")
     public ResponseEntity<?> resetPassword(@RequestParam(value = "token", required = true) String token, String password) {
         return this.userService.resetPassword(token, password);
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/testAuthUser")
+    public String testAuthUser(Principal principal) {
+        return "Hello user " + principal.getName();
+    }
+    
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/testAuthAdmin")
+    public String testAuthAdmin(Principal principal) {
+        return "Hello admin " + principal.getName();
     }
 }

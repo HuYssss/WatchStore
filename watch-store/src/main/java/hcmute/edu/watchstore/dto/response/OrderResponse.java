@@ -20,8 +20,6 @@ public class OrderResponse {
 
     private double totalPrice;
 
-    private ObjectId coupon;
-
     private List<ProductItemResponse> productItems;
 
     private ObjectId user;

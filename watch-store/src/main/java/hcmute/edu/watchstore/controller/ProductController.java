@@ -2,7 +2,6 @@ package hcmute.edu.watchstore.controller;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,7 +9,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import hcmute.edu.watchstore.dto.request.AddProdToCateReq;
+import hcmute.edu.watchstore.entity.Product;
 import hcmute.edu.watchstore.service.ProductService;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
 
 @RestController
 @RequestMapping("/product")
@@ -30,7 +34,7 @@ public class ProductController {
     
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin")
-    public String testAdmin(Pageable pageable) {
+    public String testAdmin() {
         return "You are Admin !!!";
     }
 
@@ -42,5 +46,29 @@ public class ProductController {
     @GetMapping("/count")
     public long countAllProduct() {
         return this.productService.countAll();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/create")
+    public ResponseEntity<?> createProduct(@RequestBody Product product) {
+        return this.productService.createOrUpdateProduct(product);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/edit")
+    public ResponseEntity<?> editProduct(@RequestBody Product product) {
+        return this.productService.createOrUpdateProduct(product);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/delete/{productId}")
+    public ResponseEntity<?> deleteProduct(@PathVariable ObjectId productId) {
+        return this.productService.delete(productId);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/addProductToCategory")
+    public ResponseEntity<?> addProductToCategory(@RequestBody AddProdToCateReq req) {
+        return this.productService.addProductToCategory(req.getProductId(), req.getCategoryId());
     }
 }

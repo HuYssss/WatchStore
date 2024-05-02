@@ -19,6 +19,8 @@ public class User {
     @Id
     private ObjectId id;
 
+    private List<String> userImg;
+
     private String email;
 
     private String phone;
@@ -26,6 +28,14 @@ public class User {
     private String username;
 
     private String password;
+
+    private String firstname;
+
+    private String lastname;
+
+    private String avatarImg;
+
+    private String backgroundImg;
     
     private List<ObjectId> address;
 

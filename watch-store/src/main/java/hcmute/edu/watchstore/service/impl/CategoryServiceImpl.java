@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.mongodb.MongoException;
+
 import hcmute.edu.watchstore.base.ServiceBase;
 import hcmute.edu.watchstore.constants.ResponseCode;
 import hcmute.edu.watchstore.dto.response.CategoryResponse;
@@ -29,14 +31,45 @@ public class CategoryServiceImpl extends ServiceBase implements CategoryService 
 
     @Override
     public ObjectId saveOrUpdate(Category category) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'saveOrUpdate'");
+        if (category.getId() == null) 
+            category.setId(new ObjectId());
+
+        if (category.getProduct() == null) 
+            category.setProduct(new ArrayList<>());
+
+        try {
+            this.categoryRepository.save(category);
+            return category.getId();
+        } catch (MongoException e) {
+            return null;
+        }
     }
 
     @Override
     public boolean delete(ObjectId categoryId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'delete'");
+        try {
+            this.categoryRepository.deleteById(categoryId);
+            return true;
+        } catch (MongoException e) {
+            return false;
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> createCategory(Category category) {
+        return (saveOrUpdate(category) != null) 
+            ? success("Create new category success !!!") 
+            : error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
+    }
+
+    @Override
+    public ResponseEntity<?> deleteCategory(ObjectId categoryId) {
+        Category category = findCategory(categoryId);
+        if(delete(categoryId)) {
+            handleDeleteCategory(category.getProduct());
+            return success("Delete category success !!!");
+        }
+        return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
     }
 
     @Override
@@ -67,5 +100,32 @@ public class CategoryServiceImpl extends ServiceBase implements CategoryService 
 
         return success(categoryResponse);
     }
-    
+
+    public void handleDeleteCategory(List<ObjectId> productList) {
+        if (!productList.isEmpty()) {
+            List<Product> allProduct = this.productService.findAll();
+            for (ObjectId id : productList) {
+                Product p = findProduct(id, allProduct);
+                p.setCategory(new ObjectId("662a058d43948d98f91010b8"));
+                this.productService.saveOrUpdate(p);
+            }
+
+            Category category = findCategory(new ObjectId("662a058d43948d98f91010b8"));
+            List<ObjectId> products = category.getProduct();
+            products.addAll(productList);
+            this.categoryRepository.save(category);
+        }
+    }
+
+    public Product findProduct(ObjectId id, List<Product> products) {
+        return products.stream()
+                .filter(p -> p.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
+    @Override
+    public ResponseEntity<?> findAll() {
+        return success(this.categoryRepository.findAll());
+    }
 }

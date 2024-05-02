@@ -2,7 +2,9 @@ package hcmute.edu.watchstore.service.impl;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,12 +23,14 @@ import hcmute.edu.watchstore.dto.request.LoginRequest;
 import hcmute.edu.watchstore.dto.request.UserRequest;
 import hcmute.edu.watchstore.dto.response.LoginResponse;
 import hcmute.edu.watchstore.entity.Cart;
+import hcmute.edu.watchstore.entity.Role;
 import hcmute.edu.watchstore.entity.User;
 import hcmute.edu.watchstore.exception.InvalidValueException;
 import hcmute.edu.watchstore.exception.NoParamException;
 import hcmute.edu.watchstore.helper.MailService;
 import hcmute.edu.watchstore.helper.ResetTokenGenerator;
 import hcmute.edu.watchstore.repository.CartRepository;
+import hcmute.edu.watchstore.repository.RoleRepository;
 import hcmute.edu.watchstore.repository.UserRepository;
 import hcmute.edu.watchstore.service.UserService;
 import hcmute.edu.watchstore.util.JwtUtils;
@@ -50,10 +54,20 @@ public class UserServiceImpl extends ServiceBase implements UserService {
     @Autowired
     private MailService mailService;
 
+    @Autowired
+    private RoleRepository roleRepository;
+
     @Override
     public User findUserByUsername(String username) {
-        Optional<User> currentUser = this.userRepository.findByUsername(username);
-        return currentUser.orElse(null);
+        Optional<User> user = this.userRepository.findByUsername(username);
+        if (user.isPresent()) {
+            Set<Role> roles = new HashSet<>();
+            for(Role r : user.get().getRole()){
+                roles.add(this.roleRepository.findById(r.getId()).orElse(null));
+            }
+            user.get().setRole(roles);
+        }
+        return user.orElse(null);
     }
 
     @Override
@@ -99,6 +113,12 @@ public class UserServiceImpl extends ServiceBase implements UserService {
 
             String token = JwtUtils.generateToken(loginReq.getUsername());
             LoginResponse authResponse = new LoginResponse(token, "Login Successful !!!");
+
+            // handle login
+            User user = findUserByUsername(loginReq.getUsername());
+            user.setState("online");
+            this.userRepository.save(user);
+            
             return success(authResponse);
         } catch (Exception e) {
             e.printStackTrace();
@@ -161,6 +181,10 @@ public class UserServiceImpl extends ServiceBase implements UserService {
 
         currentUser.setEmail(userReq.getEmail());
         currentUser.setPhone(userReq.getPhone());
+        currentUser.setAvatarImg(userReq.getAvatarImg());
+        currentUser.setBackgroundImg(userReq.getBackgroundImg());
+        currentUser.setFirstname(userReq.getFirstname());
+        currentUser.setLastname(userReq.getLastname());
         
         try {
             this.userRepository.save(currentUser);
@@ -172,8 +196,32 @@ public class UserServiceImpl extends ServiceBase implements UserService {
 
     @Override
     public ResponseEntity<?> getUserDetail(ObjectId userId) {
-        Optional<User> user = this.userRepository.findById(userId);
-        return success(user.orElse(null));
+        return success(findUserById(userId));
     }
-    
+
+    @Override
+    public User findUserById(ObjectId userId) {
+        return this.userRepository.findById(userId).orElse(null);
+    }
+
+    @Override
+    public ResponseEntity<?> blockUser(ObjectId userId) {
+        User user = findUserById(userId);
+        if (user == null) {
+            return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage()); 
+        }
+
+        try {
+            user.setState("block");
+            this.userRepository.save(user);
+            return success("Block user success !!!");
+        } catch (MongoException e) {
+            return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> logout(ObjectId userId) {
+        return null;
+    }
 }
