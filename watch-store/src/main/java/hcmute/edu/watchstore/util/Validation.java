@@ -27,7 +27,6 @@ public class Validation {
         parsedUser.setUsername(userRequest.getUsername());
         parsedUser.setPassword(userRequest.getPassword());
         parsedUser.setUserImg(new ArrayList<>());
-        parsedUser.setAddress(new ArrayList<>());
         parsedUser.setOrder(new ArrayList<>());
         parsedUser.setState("active");
         Set<Role> roles = new HashSet<>();

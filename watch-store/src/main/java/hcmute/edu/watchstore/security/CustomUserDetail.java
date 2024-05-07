@@ -43,9 +43,6 @@ public class CustomUserDetail implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        if (user.getState().equals("block")) {
-            return false;
-        }
         return true;
     }
 
@@ -56,9 +53,6 @@ public class CustomUserDetail implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        if (user.getState().equals("online")) {
-            return false;
-        }
         return true;
     }
 

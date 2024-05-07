@@ -194,6 +194,9 @@ public class UserServiceImpl extends ServiceBase implements UserService {
         if (userReq.getLastname() != null) {
             currentUser.setLastname(userReq.getLastname());
         }
+        if (userReq.getAddress() != null) {
+            currentUser.setAddress(userReq.getAddress());
+        }
         
         try {
             this.userRepository.save(currentUser);

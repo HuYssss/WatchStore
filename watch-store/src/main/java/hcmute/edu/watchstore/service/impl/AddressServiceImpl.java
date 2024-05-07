@@ -79,44 +79,46 @@ public class AddressServiceImpl extends ServiceBase implements AddressService{
 
     @Override
     public ResponseEntity<?> deleteAddress(ObjectId addressId, ObjectId userId) {
-        Optional<Address> currentAddress = this.addressRepository.findById(addressId);
+        // Optional<Address> currentAddress = this.addressRepository.findById(addressId);
 
-        if (!currentAddress.isPresent() && currentAddress.get().getUser().equals(userId)) {
-            return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage());
-        }
+        // if (!currentAddress.isPresent() && currentAddress.get().getUser().equals(userId)) {
+        //     return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage());
+        // }
 
-        try {
-            handleManageAddressUser(addressId, userId, "delete");
-            this.addressRepository.deleteById(addressId);
-            return success("Delete address success !!!");
-        } catch (Exception e) {
-            return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
-        }
+        // try {
+        //     handleManageAddressUser(addressId, userId, "delete");
+        //     this.addressRepository.deleteById(addressId);
+        //     return success("Delete address success !!!");
+        // } catch (Exception e) {
+        //     return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
+        // }
+        return null;
     }
     
     public void handleManageAddressUser(ObjectId addressId, ObjectId userId, String message) throws Exception {
-        Optional<User> currentUser = this.userRepository.findById(userId);
+        // Optional<User> currentUser = this.userRepository.findById(userId);
 
-        if (currentUser.isPresent()) {
-            try {
-                List<ObjectId> addresses = currentUser.get().getAddress();
+        // if (currentUser.isPresent()) {
+        //     try {
+        //         List<ObjectId> addresses = currentUser.get().getAddress();
 
-                if (message.equals("delete")) 
-                    addresses.remove(addressId);
+        //         if (message.equals("delete")) 
+        //             addresses.remove(addressId);
 
-                if (message.equals("create")) 
-                    addresses.add(addressId);
+        //         if (message.equals("create")) 
+        //             addresses.add(addressId);
                     
-                currentUser.get().setAddress(addresses);
-                this.userRepository.save(currentUser.get());
-            } catch (Exception e) {
-                throw new Exception(e);
-            }
-        }
+        //         currentUser.get().setAddress(addresses);
+        //         this.userRepository.save(currentUser.get());
+        //     } catch (Exception e) {
+        //         throw new Exception(e);
+        //     }
+        // }
     }
 
     @Override
     public Address findAddressById(ObjectId addressId) {
-        return this.addressRepository.findById(addressId).orElse(null);
+        return null;
+        // return this.addressRepository.findById(addressId).orElse(null);
     }
 }

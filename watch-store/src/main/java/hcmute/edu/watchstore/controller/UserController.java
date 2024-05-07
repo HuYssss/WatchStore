@@ -4,6 +4,7 @@ import java.security.Principal;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,6 +21,7 @@ public class UserController extends ControllerBase {
     @Autowired
     private UserService userService;
 
+    @PreAuthorize("hasRole('USER')")
     @PostMapping("/editDetail")
     public ResponseEntity<?> editUserDetail(@RequestBody UserRequest userRequest, Principal principal) {
         return this.userService.editUserDetail(userRequest, findIdByUsername(principal.getName()));
