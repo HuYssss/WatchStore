@@ -12,7 +12,7 @@ import com.mongodb.MongoException;
 
 import hcmute.edu.watchstore.base.ServiceBase;
 import hcmute.edu.watchstore.dto.response.ProductItemResponse;
-import hcmute.edu.watchstore.entity.Product;
+import hcmute.edu.watchstore.dto.response.ProductResponse;
 import hcmute.edu.watchstore.entity.ProductItem;
 import hcmute.edu.watchstore.repository.ProductItemRepository;
 import hcmute.edu.watchstore.service.ProductItemService;
@@ -53,7 +53,7 @@ public class ProductItemServiceImpl extends ServiceBase implements ProductItemSe
     @Override
     public List<ProductItemResponse> findProductItemResponse(List<ObjectId> itemId) {
         List<ProductItem> items = this.productItemRepository.findAll();
-        List<Product> products = this.productService.findAll();
+        List<ProductResponse> products = this.productService.findAll();
         List<ProductItemResponse> responses = new ArrayList<>();
         if (items.isEmpty() || products.isEmpty()) 
             return null;
@@ -61,7 +61,7 @@ public class ProductItemServiceImpl extends ServiceBase implements ProductItemSe
             ProductItem item = findItem(id, items);
             if (item != null) {
                 ProductItemResponse response = new ProductItemResponse(
-                    item.getId(),
+                    item.getId().toHexString(),
                     findProduct(item.getProduct(), products),
                     item.getQuantity()
                 );
@@ -89,9 +89,9 @@ public class ProductItemServiceImpl extends ServiceBase implements ProductItemSe
                 .orElse(null);
     }
 
-    public Product findProduct(ObjectId id, List<Product> products) {
+    public ProductResponse findProduct(ObjectId id, List<ProductResponse> products) {
         return products.stream()
-                 .filter(product -> product.getId().equals(id))
+                 .filter(product -> product.getId().equals(id.toHexString()))
                  .findFirst()
                  .orElse(null);
     }

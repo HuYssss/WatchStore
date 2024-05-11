@@ -22,6 +22,6 @@ public class ServiceBase {
         Map<String, Object> response = new HashMap<>();
         response.put("code", code);
         response.put("message", message);
-        return new ResponseEntity<Object>(response, HttpStatus.OK);
+        return new ResponseEntity<Object>(response, HttpStatus.BAD_REQUEST);
     }
 }

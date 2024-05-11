@@ -77,11 +77,13 @@ public class CartServiceImpl extends ServiceBase implements CartService {
     public boolean handleManageProductInCart(ProductItem productItem, Cart userCart) {
         List<ProductItemResponse> cartResp = getProductItemResp(userCart.getProductItems());
         boolean itemPresent = false;
-        for (ProductItemResponse resp : cartResp) {
-            if (resp.getProduct().getId().equals(productItem.getProduct())) {
-                itemPresent = true;
-                productItem.setId(resp.getId());
-                productItem.setQuantity(productItem.getQuantity() + resp.getQuantity());
+        if (cartResp != null) {
+            for (ProductItemResponse resp : cartResp) {
+                if (resp.getProduct().getId().equals(productItem.getProduct())) {
+                    itemPresent = true;
+                    productItem.setId(new ObjectId(resp.getId()));
+                    productItem.setQuantity(productItem.getQuantity() + resp.getQuantity());
+                }
             }
         }
 

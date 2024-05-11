@@ -1,5 +1,6 @@
 package hcmute.edu.watchstore.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,8 +29,17 @@ public class AddressServiceImpl extends ServiceBase implements AddressService{
 
     @Override
     public ResponseEntity<?> findAddressByUser(ObjectId userId) {
-        Iterable<Address> list = this.addressRepository.findByUser(userId);
-        return success(list);
+        List<Address> list = this.addressRepository.findByUser(userId);
+        List<AddressRequest> result = new ArrayList<>();
+        if (!list.isEmpty()) {
+            for(Address a : list)
+            {
+                AddressRequest resp = new AddressRequest(a);
+                result.add(resp);
+            }
+            return success(result);
+        }
+        return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
     }
 
     @Override
@@ -79,46 +89,48 @@ public class AddressServiceImpl extends ServiceBase implements AddressService{
 
     @Override
     public ResponseEntity<?> deleteAddress(ObjectId addressId, ObjectId userId) {
-        // Optional<Address> currentAddress = this.addressRepository.findById(addressId);
+        Optional<Address> currentAddress = this.addressRepository.findById(addressId);
 
-        // if (!currentAddress.isPresent() && currentAddress.get().getUser().equals(userId)) {
-        //     return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage());
-        // }
+        if (!currentAddress.isPresent() && currentAddress.get().getUser().equals(userId)) {
+            return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage());
+        }
 
-        // try {
-        //     handleManageAddressUser(addressId, userId, "delete");
-        //     this.addressRepository.deleteById(addressId);
-        //     return success("Delete address success !!!");
-        // } catch (Exception e) {
-        //     return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
-        // }
-        return null;
+        try {
+            handleManageAddressUser(addressId, userId, "delete");
+            this.addressRepository.deleteById(addressId);
+            return success("Delete address success !!!");
+        } catch (Exception e) {
+            return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
+        }
     }
     
     public void handleManageAddressUser(ObjectId addressId, ObjectId userId, String message) throws Exception {
-        // Optional<User> currentUser = this.userRepository.findById(userId);
+        Optional<User> currentUser = this.userRepository.findById(userId);
 
-        // if (currentUser.isPresent()) {
-        //     try {
-        //         List<ObjectId> addresses = currentUser.get().getAddress();
+        if (currentUser.isPresent()) {
+            try {
+                List<ObjectId> addresses = currentUser.get().getAddress();
 
-        //         if (message.equals("delete")) 
-        //             addresses.remove(addressId);
+                if (message.equals("delete")) 
+                    addresses.remove(addressId);
 
-        //         if (message.equals("create")) 
-        //             addresses.add(addressId);
+                if (message.equals("create")) 
+                    addresses.add(addressId);
                     
-        //         currentUser.get().setAddress(addresses);
-        //         this.userRepository.save(currentUser.get());
-        //     } catch (Exception e) {
-        //         throw new Exception(e);
-        //     }
-        // }
+                currentUser.get().setAddress(addresses);
+                this.userRepository.save(currentUser.get());
+            } catch (Exception e) {
+                throw new Exception(e);
+            }
+        }
     }
 
     @Override
-    public Address findAddressById(ObjectId addressId) {
+    public AddressRequest findAddressById(ObjectId addressId) {
+        Optional<Address> address = this.addressRepository.findById(addressId);
+        if (address.isPresent()) {
+            return new AddressRequest(address.get());
+        }
         return null;
-        // return this.addressRepository.findById(addressId).orElse(null);
     }
 }

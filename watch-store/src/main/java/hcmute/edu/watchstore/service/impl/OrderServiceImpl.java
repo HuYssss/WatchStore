@@ -59,7 +59,7 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
             Order order = findItem(id, orderList);
             if (order != null) {
                 OrderResponse response = new OrderResponse(
-                    order.getId(),
+                    order.getId().toHexString(),
                     order.getOrderDate(),
                     order.getTotalPrice(),
                     this.productItemService.findProductItemResponse(order.getProductItems()),

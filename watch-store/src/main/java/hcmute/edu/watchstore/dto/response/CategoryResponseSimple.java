@@ -9,11 +9,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategoryResponse {
-    
+public class CategoryResponseSimple {
     private String id;
 
     private String categoryName;
 
-    private List<ProductResponse> product;
+    private List<String> productId;
 }

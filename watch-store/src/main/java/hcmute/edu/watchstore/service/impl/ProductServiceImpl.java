@@ -13,6 +13,7 @@ import com.mongodb.MongoException;
 
 import hcmute.edu.watchstore.base.ServiceBase;
 import hcmute.edu.watchstore.constants.ResponseCode;
+import hcmute.edu.watchstore.dto.response.ProductResponse;
 import hcmute.edu.watchstore.entity.Category;
 import hcmute.edu.watchstore.entity.Product;
 import hcmute.edu.watchstore.repository.CategoryRepository;
@@ -139,9 +140,17 @@ public class ProductServiceImpl extends ServiceBase implements ProductService{
     }
 
     @Override
-    public List<Product> findAll() {
+    public List<ProductResponse> findAll() {
         List<Product> list = this.productRepository.findAll();
-        return (list.isEmpty()) ? null : list;
+        if (!list.isEmpty()) {
+            List<ProductResponse> responses = new ArrayList<>();
+            for(Product p : list) {
+                ProductResponse resp = new ProductResponse(p);
+                responses.add(resp);
+            }
+            return responses;
+        }
+        return null;
     }
 
     public void handleManageProduct(ObjectId productId, ObjectId categoryId, String message) {
@@ -162,5 +171,10 @@ public class ProductServiceImpl extends ServiceBase implements ProductService{
                 throw new MongoException("Can't update category !!!");
             }
         }
+    }
+
+    @Override
+    public List<Product> findAllNormal() {
+        return this.productRepository.findAll();
     }
 }
