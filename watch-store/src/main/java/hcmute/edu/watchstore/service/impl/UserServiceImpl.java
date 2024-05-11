@@ -22,6 +22,7 @@ import hcmute.edu.watchstore.constants.ResponseCode;
 import hcmute.edu.watchstore.dto.request.LoginRequest;
 import hcmute.edu.watchstore.dto.request.UserRequest;
 import hcmute.edu.watchstore.dto.response.LoginResponse;
+import hcmute.edu.watchstore.dto.response.UserResp;
 import hcmute.edu.watchstore.entity.Cart;
 import hcmute.edu.watchstore.entity.Role;
 import hcmute.edu.watchstore.entity.User;
@@ -205,7 +206,19 @@ public class UserServiceImpl extends ServiceBase implements UserService {
 
     @Override
     public ResponseEntity<?> getUserDetail(ObjectId userId) {
-        return success(findUserById(userId));
+        User user = findUserById(userId);
+        if (user == null) {
+            return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage());
+        }
+        UserResp userResp = new UserResp(user);
+
+        for(Role r : user.getRole()){
+            Optional<Role> role = this.roleRepository.findById(r.getId());
+            if (role.isPresent() && role.get().getRoleName().equals("ADMIN")) {
+                userResp.setAdmin(true);
+            }
+        }
+        return success(userResp);
     }
 
     @Override
