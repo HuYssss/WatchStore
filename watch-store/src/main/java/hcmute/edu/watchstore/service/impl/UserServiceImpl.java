@@ -114,11 +114,6 @@ public class UserServiceImpl extends ServiceBase implements UserService {
 
             String token = JwtUtils.generateToken(loginReq.getUsername());
             LoginResponse authResponse = new LoginResponse(token, "Login Successful !!!");
-
-            // handle login
-            User user = findUserByUsername(loginReq.getUsername());
-            user.setState("online");
-            this.userRepository.save(user);
             
             return success(authResponse);
         } catch (Exception e) {

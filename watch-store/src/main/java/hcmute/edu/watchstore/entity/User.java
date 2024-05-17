@@ -19,8 +19,6 @@ public class User {
     @Id
     private ObjectId id;
 
-    private List<String> userImg;
-
     private String email;
 
     private String phone;
