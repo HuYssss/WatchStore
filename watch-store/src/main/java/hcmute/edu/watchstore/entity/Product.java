@@ -53,6 +53,8 @@ public class Product {
     private String color;
 
     private ObjectId category;
+    
+    private int amount;
 
     private String state;
 }

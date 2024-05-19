@@ -92,7 +92,7 @@ public class UserServiceImpl extends ServiceBase implements UserService {
             saveUser.setCart(cart.getId());
             this.userRepository.save(saveUser);
             
-            return success(saveUser);
+            return success("Register User Success !!!");
         } catch (InvalidValueException e) {
             throw new RuntimeException(e);
         } catch (NoParamException e) {
