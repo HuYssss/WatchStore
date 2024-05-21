@@ -32,9 +32,8 @@ public class ProductServiceImpl extends ServiceBase implements ProductService{
     @Override
     public ResponseEntity<?> findProductById(ObjectId productId) {
         Product product = findProduct(productId);
-
         if (product != null) 
-            return success(product);
+            return success(new ProductResponse(product));
         else
             return error(ResponseCode.PRODUCT_NOT_FOUND.getCode(), ResponseCode.PRODUCT_NOT_FOUND.getMessage());
     }
@@ -43,11 +42,11 @@ public class ProductServiceImpl extends ServiceBase implements ProductService{
     public ResponseEntity<?> findProductByKeyword(String keyword) {
         List<Product> products = this.productRepository.findAll();
 
-        List<Product> result = new ArrayList<>();
+        List<ProductResponse> result = new ArrayList<>();
 
         for (Product p : products)
             if (p.getProductName().contains(keyword))
-                result.add(p);
+                result.add(new ProductResponse(p));
 
         if (!result.isEmpty()) 
             return success(result);
