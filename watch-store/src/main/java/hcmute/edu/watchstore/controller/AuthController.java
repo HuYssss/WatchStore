@@ -8,10 +8,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import hcmute.edu.watchstore.dto.request.ForgotPassword;
 import hcmute.edu.watchstore.dto.request.LoginRequest;
+import hcmute.edu.watchstore.dto.request.ResetPassword;
 import hcmute.edu.watchstore.dto.request.UserRequest;
 import hcmute.edu.watchstore.service.UserService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,13 +36,13 @@ public class AuthController {
     }
 
     @PostMapping("/forgotPassword")
-    public ResponseEntity<?> forgotPassword(@RequestParam(value = "email", required = true) String email) {
-        return this.userService.generateTokenReset(email);
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPassword forgotPassword) {
+        return this.userService.generateTokenReset(forgotPassword.getEmail());
     }
     
     @PostMapping("/resetPassword")
-    public ResponseEntity<?> resetPassword(@RequestParam(value = "token", required = true) String token, String password) {
-        return this.userService.resetPassword(token, password);
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPassword resetPassword) {
+        return this.userService.resetPassword(resetPassword.getToken(), resetPassword.getPassword());
     }
 
     @PreAuthorize("hasRole('USER')")

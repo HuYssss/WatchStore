@@ -19,7 +19,6 @@ public class MailServiceImpl implements MailService {
     @Autowired
     private JavaMailSender javaMailSender;
 
-    @SuppressWarnings("null")
     @Override
     public String sendMail(MultipartFile[] file, String to, String[] cc, String subject, String body) {
         try {
@@ -48,6 +47,12 @@ public class MailServiceImpl implements MailService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public String sendResetToken(String email) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'sendResetToken'");
     }
     
 }

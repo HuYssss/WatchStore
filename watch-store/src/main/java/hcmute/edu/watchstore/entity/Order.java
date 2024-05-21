@@ -28,7 +28,7 @@ public class Order {
 
     private ObjectId user;
 
-    private ObjectId address;
+    private String address;
 
     private String state;
 }

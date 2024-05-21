@@ -177,4 +177,22 @@ public class ProductServiceImpl extends ServiceBase implements ProductService{
     public List<Product> findAllNormal() {
         return this.productRepository.findAll();
     }
+
+    @Override
+    public boolean saveProductByList(List<Product> products) {
+        try {
+            this.productRepository.saveAll(products);
+            return true;
+        } catch (MongoException e) {
+            return false;
+        }
+    }
+
+    public Product findProduct(ObjectId id, List<Product> products) {
+        return products.stream()
+                 .filter(product -> product.getId().equals(id))
+                 .findFirst()
+                 .orElse(null);
+    }
+
 }

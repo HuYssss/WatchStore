@@ -236,9 +236,4 @@ public class UserServiceImpl extends ServiceBase implements UserService {
             return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
         }
     }
-
-    @Override
-    public ResponseEntity<?> logout(ObjectId userId) {
-        return null;
-    }
 }

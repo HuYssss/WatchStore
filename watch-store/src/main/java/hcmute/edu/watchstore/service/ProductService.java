@@ -20,4 +20,5 @@ public interface ProductService {
     ResponseEntity<?> createOrUpdateProduct(Product product);
     ResponseEntity<?> delete(ObjectId objectId);
     ResponseEntity<?> getAll();
+    boolean saveProductByList(List<Product> products);
 }

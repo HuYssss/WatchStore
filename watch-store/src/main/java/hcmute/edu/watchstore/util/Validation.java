@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 import org.bson.types.ObjectId;
 import org.springframework.util.ObjectUtils;
 
-import hcmute.edu.watchstore.dto.request.AddressRequest;
 import hcmute.edu.watchstore.dto.request.UserRequest;
 import hcmute.edu.watchstore.entity.Role;
 import hcmute.edu.watchstore.entity.User;
@@ -26,7 +25,6 @@ public class Validation {
         parsedUser.setPhone(userRequest.getPhone());
         parsedUser.setUsername(userRequest.getUsername());
         parsedUser.setPassword(userRequest.getPassword());
-        parsedUser.setAddress(new ArrayList<>());
         parsedUser.setOrder(new ArrayList<>());
         parsedUser.setState("active");
         Set<Role> roles = new HashSet<>();
@@ -46,15 +44,6 @@ public class Validation {
             throw new NoParamException();
         if (!isValidEmail(userRequest.getEmail()) || userRequest.getPhone().length() != 10)
             throw new InvalidValueException();
-    }
-
-    public static boolean validateSaveAddress(AddressRequest addressRequest)
-            throws NoParamException {
-        if (ObjectUtils.isEmpty(addressRequest) || ObjectUtils.isEmpty(addressRequest.getAddress())
-                || ObjectUtils.isEmpty(addressRequest.getCity()) || ObjectUtils.isEmpty(addressRequest.getCountry()))
-            throw new NoParamException();
-
-        return true;
     }
 
     public static boolean isValidEmail(String email) {

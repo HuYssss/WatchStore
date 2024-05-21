@@ -17,8 +17,6 @@ import lombok.NoArgsConstructor;
 public class UserResp {
     private ObjectId id;
 
-    private List<String> userImg;
-
     private String email;
 
     private String phone;
@@ -35,7 +33,7 @@ public class UserResp {
 
     private String backgroundImg;
     
-    private List<ObjectId> address;
+    private String address;
 
     private List<ObjectId> order;
 

@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.bson.types.ObjectId;
 
-import hcmute.edu.watchstore.dto.request.AddressRequest;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,7 +23,7 @@ public class OrderResponse {
 
     private ObjectId user;
 
-    private AddressRequest address;
+    private String address;
 
     private String state;
 }

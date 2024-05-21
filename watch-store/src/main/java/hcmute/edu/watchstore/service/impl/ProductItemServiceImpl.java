@@ -55,8 +55,8 @@ public class ProductItemServiceImpl extends ServiceBase implements ProductItemSe
         List<ProductItem> items = this.productItemRepository.findAll();
         List<ProductResponse> products = this.productService.findAll();
         List<ProductItemResponse> responses = new ArrayList<>();
-        if (items.isEmpty() || products.isEmpty()) 
-            return null;
+        if (items.isEmpty() || products.isEmpty())
+            return responses;
         for (ObjectId id : itemId) {
             ProductItem item = findItem(id, items);
             if (item != null) {
@@ -94,5 +94,18 @@ public class ProductItemServiceImpl extends ServiceBase implements ProductItemSe
                  .filter(product -> product.getId().equals(id.toHexString()))
                  .findFirst()
                  .orElse(null);
+    }
+
+    @Override
+    public List<ProductItem> findItemByList(List<ObjectId> itemId) {
+        List<ProductItem> allItems = this.productItemRepository.findAll();
+        List<ProductItem> response = new ArrayList<>();
+        for(ObjectId id : itemId) {
+            ProductItem item = findItem(id, allItems);
+            if (item != null) {
+                response.add(item);
+            }
+        }
+        return response;
     }
 }

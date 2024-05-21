@@ -20,13 +20,15 @@ import hcmute.edu.watchstore.dto.response.OrderResponse;
 import hcmute.edu.watchstore.dto.response.ProductItemResponse;
 import hcmute.edu.watchstore.entity.Cart;
 import hcmute.edu.watchstore.entity.Order;
+import hcmute.edu.watchstore.entity.Product;
+import hcmute.edu.watchstore.entity.ProductItem;
 import hcmute.edu.watchstore.entity.User;
 import hcmute.edu.watchstore.repository.CartRepository;
 import hcmute.edu.watchstore.repository.OrderRepository;
 import hcmute.edu.watchstore.repository.UserRepository;
-import hcmute.edu.watchstore.service.AddressService;
 import hcmute.edu.watchstore.service.OrderService;
 import hcmute.edu.watchstore.service.ProductItemService;
+import hcmute.edu.watchstore.service.ProductService;
 
 @Service
 public class OrderServiceImpl extends ServiceBase implements OrderService {
@@ -41,10 +43,10 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
     private ProductItemService productItemService;
 
     @Autowired
-    private AddressService addressService;
+    private CartRepository cartRepository;
 
     @Autowired
-    private CartRepository cartRepository;
+    private ProductService productService;
 
     @Override
     public ResponseEntity<?> getOrderUser(ObjectId userId) {
@@ -64,7 +66,7 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
                     order.getTotalPrice(),
                     this.productItemService.findProductItemResponse(order.getProductItems()),
                     order.getUser(),
-                    this.addressService.findAddressById(order.getAddress()),
+                    order.getAddress(),
                     order.getState()
                 );
 
@@ -94,8 +96,7 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
 
         try {
             this.orderRepository.save(newOrder);
-            handleManageAddressUser(order.getProductItem(), userId, "create");
-            
+            handleManageOrderUser(order.getProductItem(), userId, "create");
             List<ObjectId> orderUser = currentUser.get().getOrder();
             orderUser.add(newOrder.getId());
             currentUser.get().setOrder(orderUser);
@@ -117,7 +118,7 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
 
         try {
             this.orderRepository.deleteById(orderId);
-            handleManageAddressUser(order.get().getProductItems(), userId, "delete");
+            handleManageOrderUser(order.get().getProductItems(), userId, "delete");
             List<ObjectId> orderUser = currentUser.get().getOrder();
             orderUser.remove(orderId);
             currentUser.get().setOrder(orderUser);
@@ -128,7 +129,7 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
         }
     }
 
-    public boolean handleManageAddressUser(List<ObjectId> productItem, ObjectId userId, String message) {
+    public void handleManageOrderUser(List<ObjectId> productItem, ObjectId userId, String message) {
         Optional<Cart> userCart = this.cartRepository.findByUser(userId);
 
         if (userCart.isPresent()) {
@@ -143,14 +144,45 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
                     
                 userCart.get().setProductItems(cartItem);
                 this.cartRepository.save(userCart.get());
-                return true;
             } catch (Exception e) {
-                return false;
+                throw new MongoException("Can't update cart user");
             }
         }
 
-        return false;
-        
+        // handle manage quantity product
+        List<ProductItem> items = this.productItemService.findItemByList(productItem);
+        List<Product> products = this.productService.findAllNormal();
+        List<Product> updated = new ArrayList<>();
+        for(ProductItem item : items) {
+            Product product = findProduct(item.getProduct(), products);
+            if (product != null) {
+                int amount = product.getAmount();
+                if (message.equals("delete")) {
+                    amount = amount + item.getQuantity();
+                }
+                if (message.equals("create")) {
+                    amount = amount - item.getQuantity();
+                }
+                product.setAmount(amount);
+                updated.add(product);
+            }
+        }
+        this.productService.saveProductByList(updated);
+    }
+
+    public List<ObjectId> getListProductId(List<ProductItem> productItem) {
+        List<ObjectId> productId = new ArrayList<>();
+        for(ProductItem item : productItem) {
+            productId.add(item.getProduct());
+        }
+        return productId;
+    }
+
+    public Product findProduct(ObjectId id, List<Product> products) {
+        return products.stream()
+                 .filter(product -> product.getId().equals(id))
+                 .findFirst()
+                 .orElse(null);
     }
 
     public double calculatorTotalPrice(List<ObjectId> productItem) {

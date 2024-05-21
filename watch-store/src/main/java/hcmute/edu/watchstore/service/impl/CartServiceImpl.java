@@ -43,17 +43,13 @@ public class CartServiceImpl extends ServiceBase implements CartService {
         
         List<ProductItemResponse> responses = getProductItemResp(cartUser.getProductItems());
 
-        if (!responses.isEmpty()) 
-            return success(responses);
-        else
-            return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage());
+        return success(responses);
     }
 
     @Override
     public ResponseEntity<?> editProductInCart(ProductItem productItem, ObjectId userId) {
         ProductItem item = this.productItemService.findProductItem(productItem.getId());
         if (item != null) {
-            item.setProduct(productItem.getProduct());
             item.setQuantity(productItem.getQuantity());
             this.productItemService.saveOrEditItem(item);
 
