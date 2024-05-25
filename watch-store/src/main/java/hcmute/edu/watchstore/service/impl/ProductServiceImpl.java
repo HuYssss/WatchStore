@@ -194,4 +194,9 @@ public class ProductServiceImpl extends ServiceBase implements ProductService{
                  .orElse(null);
     }
 
+    @Override
+    public ResponseEntity<?> getByOption(int limit, int offset) {
+        List<ProductResponse> data = findAll();
+        return success(data.subList(limit, offset));
+    }
 }

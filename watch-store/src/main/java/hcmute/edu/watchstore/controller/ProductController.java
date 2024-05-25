@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import hcmute.edu.watchstore.dto.request.AddProdToCateReq;
@@ -43,6 +44,12 @@ public class ProductController {
     public ResponseEntity<?> findAllProduct() {
         return this.productService.getAll();
     }
+
+    @GetMapping("/getByOption")
+    public ResponseEntity<?> getByOption(@RequestParam(value = "limit") int limit, @RequestParam(value = "offset") int offset) {
+        return this.productService.getByOption(limit, offset);
+    }
+    
 
     @GetMapping("/count")
     public long countAllProduct() {
