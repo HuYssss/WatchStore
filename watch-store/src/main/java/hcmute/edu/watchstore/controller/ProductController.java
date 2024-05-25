@@ -46,8 +46,8 @@ public class ProductController {
     }
 
     @GetMapping("/getByOption")
-    public ResponseEntity<?> getByOption(@RequestParam(value = "limit") int limit, @RequestParam(value = "offset") int offset) {
-        return this.productService.getByOption(limit, offset);
+    public ResponseEntity<?> getByOption(@RequestParam(value = "index") int index, @RequestParam(value = "toIndex") int toIndex) {
+        return this.productService.getByOption(index, toIndex);
     }
     
 
