@@ -17,4 +17,5 @@ public interface UserService {
     ResponseEntity<?> editUserDetail(UserRequest userReq, ObjectId userId);
     ResponseEntity<?> getUserDetail(ObjectId userId);
     ResponseEntity<?> blockUser(ObjectId userId);
+    ResponseEntity<?> getAllUser();
 }

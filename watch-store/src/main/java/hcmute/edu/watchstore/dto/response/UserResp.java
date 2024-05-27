@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserResp {
-    private ObjectId id;
+    private String id;
 
     private String email;
 
@@ -49,7 +49,7 @@ public class UserResp {
 
 
     public UserResp(User user) {
-        this.id = user.getId();
+        this.id = user.getId().toHexString();
         this.email = user.getEmail();
         this.phone = user.getPhone();
         this.username = user.getUsername();

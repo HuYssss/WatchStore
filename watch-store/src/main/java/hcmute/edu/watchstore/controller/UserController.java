@@ -32,8 +32,9 @@ public class UserController extends ControllerBase {
         return this.userService.getUserDetail(findIdByUsername(principal.getName()));
     }
 
-    @GetMapping("/testToken")
-    public String testToken(Principal principal) {
-        return "Hello " + principal.getName();
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/getAll")
+    public ResponseEntity<?> getAllUser() {
+        return this.userService.getAllUser();
     }
 }

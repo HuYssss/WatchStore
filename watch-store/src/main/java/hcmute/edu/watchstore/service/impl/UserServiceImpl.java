@@ -3,6 +3,7 @@ package hcmute.edu.watchstore.service.impl;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -238,5 +239,16 @@ public class UserServiceImpl extends ServiceBase implements UserService {
         } catch (MongoException e) {
             return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
         }
+    }
+
+    @Override
+    public ResponseEntity<?> getAllUser() {
+        List<User> userList = this.userRepository.findAll();
+        List<UserResp> result = new ArrayList<>();
+        for(User u : userList) {
+            UserResp resp = new UserResp(u);
+            result.add(resp);
+        }
+        return success(result);
     }
 }
