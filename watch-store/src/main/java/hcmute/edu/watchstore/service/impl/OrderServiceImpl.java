@@ -233,4 +233,33 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
             return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage()); 
         }
     }
+
+    @Override
+    public boolean deleteOrder(List<ObjectId> orderIds) {
+        List<Order> orders = this.orderRepository.findAll();
+        List<Order> userOrder = new ArrayList<>();
+        if (orders.isEmpty()) {
+            return false;
+        }
+
+        for(ObjectId id : orderIds) {
+            Order o = findItem(id, orders);
+            userOrder.add(o);
+        }
+
+        try {
+            for(Order order : userOrder) {
+                if (order.getState().equals("processing")) {
+                    this.productItemService.deleteItemAdvance(order.getProductItems(), true);
+                } else if (order.getState().equals("shipping")) {
+                    this.productItemService.deleteItemAdvance(order.getProductItems(), false);
+                }
+            }
+            this.orderRepository.deleteAllById(orderIds);
+            return true;
+        } catch (MongoException e) {
+            return false;
+        }
+
+    }
 }

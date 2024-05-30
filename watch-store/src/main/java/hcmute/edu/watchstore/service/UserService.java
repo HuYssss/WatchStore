@@ -16,6 +16,7 @@ public interface UserService {
     ResponseEntity<?> resetPassword(String token, String password);
     ResponseEntity<?> editUserDetail(UserRequest userReq, ObjectId userId);
     ResponseEntity<?> getUserDetail(ObjectId userId);
-    ResponseEntity<?> blockUser(ObjectId userId);
+    ResponseEntity<?> blockUser(ObjectId userId, String message);
     ResponseEntity<?> getAllUser();
+    ResponseEntity<?> deleteUser(ObjectId userId);
 }

@@ -39,7 +39,7 @@ public class ProductResponse {
 
     private String condition;
 
-    private String height;
+    private String weight;
 
     private String genderUser;
 
@@ -68,7 +68,7 @@ public class ProductResponse {
         this.feature = product.getFeature();
         this.shape = product.getShape();
         this.condition = product.getCondition();
-        this.height = product.getHeight();
+        this.weight = product.getWeight();
         this.genderUser = product.getGenderUser();
         this.description = product.getDescription();
         this.color = product.getColor();

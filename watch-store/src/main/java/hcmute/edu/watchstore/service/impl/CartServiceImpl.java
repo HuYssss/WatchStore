@@ -112,4 +112,38 @@ public class CartServiceImpl extends ServiceBase implements CartService {
 
         return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
     }
+
+    @Override
+    public boolean deleteCart(ObjectId cartId) {
+        Optional<Cart> cart = this.cartRepository.findById(cartId);
+
+        if (!cart.isPresent()) {
+            return false;
+        }
+
+        try {
+            this.productItemService.deleteItemAdvance(cart.get().getProductItems(), false);
+            this.cartRepository.deleteById(cartId);
+            return true;
+        } catch (MongoException e) {
+            return false;
+        }
+        
+    }
+
+    @Override
+    public ObjectId saveCart(Cart cart) {
+        if (cart.getId().equals(null)) {
+            cart.setId(new ObjectId());
+        }
+
+        try {
+            this.cartRepository.save(cart);
+            return cart.getId();
+        } catch (MongoException e) {
+            return null;
+        }
+    }
+
+    
 }

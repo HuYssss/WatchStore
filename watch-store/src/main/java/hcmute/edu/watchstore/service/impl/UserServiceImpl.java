@@ -31,9 +31,10 @@ import hcmute.edu.watchstore.exception.InvalidValueException;
 import hcmute.edu.watchstore.exception.NoParamException;
 import hcmute.edu.watchstore.helper.MailService;
 import hcmute.edu.watchstore.helper.ResetTokenGenerator;
-import hcmute.edu.watchstore.repository.CartRepository;
 import hcmute.edu.watchstore.repository.RoleRepository;
 import hcmute.edu.watchstore.repository.UserRepository;
+import hcmute.edu.watchstore.service.CartService;
+import hcmute.edu.watchstore.service.OrderService;
 import hcmute.edu.watchstore.service.UserService;
 import hcmute.edu.watchstore.util.JwtUtils;
 import hcmute.edu.watchstore.util.Validation;
@@ -48,7 +49,7 @@ public class UserServiceImpl extends ServiceBase implements UserService {
     private UserRepository userRepository;
 
     @Autowired
-    private CartRepository cartRepository;
+    private CartService cartService;
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -58,6 +59,9 @@ public class UserServiceImpl extends ServiceBase implements UserService {
 
     @Autowired
     private RoleRepository roleRepository;
+
+    @Autowired
+    private OrderService orderService;
 
     @Override
     public User findUserByUsername(String username) {
@@ -88,7 +92,7 @@ public class UserServiceImpl extends ServiceBase implements UserService {
             Cart cart = new Cart();
             cart.setUser(saveUser.getId());
             cart.setProductItems(new ArrayList<>());
-            this.cartRepository.save(cart);
+            this.cartService.saveCart(cart);
 
             saveUser.setCart(cart.getId());
             this.userRepository.save(saveUser);
@@ -226,15 +230,32 @@ public class UserServiceImpl extends ServiceBase implements UserService {
     }
 
     @Override
-    public ResponseEntity<?> blockUser(ObjectId userId) {
+    public ResponseEntity<?> blockUser(ObjectId userId, String message) {
         User user = findUserById(userId);
         if (user == null) {
             return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage()); 
         }
 
+        String[] cc = new String[1];
+        cc[0] = user.getEmail();
+
         try {
             user.setState("block");
             this.userRepository.save(user);
+            this.mailService.sendMail(null, user.getEmail(), cc
+                , "Thông Báo Khóa Tài Khoản"
+                , "Kính gửi "+ user.getUsername() + ",\r\n" + "\r\n" +
+                                    "Chúng tôi viết email này để thông báo rằng tài khoản của bạn trên trang web Watches Store đã bị khóa tạm thời.\r\n" + "\r\n" +
+                                    "Lý do khóa tài khoản:\r\n" +
+                                    message + "\r\n\n" +
+                                    "Chúng tôi hiểu rằng điều này có thể gây bất tiện cho bạn và chúng tôi xin lỗi vì sự bất tiện này. Để giải quyết vấn đề và khôi phục lại tài khoản của bạn, vui lòng liên hệ với chúng tôi qua địa chỉ email lehuyburn23@gmail.com hoặc số điện thoại 0765196829 và cung cấp thông tin chi tiết về vấn đề của bạn.\r\n\n" + 
+                                    "Chúng tôi cam kết bảo vệ quyền lợi của khách hàng và đảm bảo rằng mọi vấn đề sẽ được giải quyết một cách nhanh chóng và công bằng.\r\n\n" + 
+                                    "Cảm ơn bạn đã hợp tác và thông cảm.\r\n\n" + 
+                                    "Trân trọng,\r\n\n" +
+                                    "Huỳnh Lê Huy\r\n\n" +
+                                    "Quản trị viên trang web\r\n\n" +
+                                    "Watches Store Website\r\n\n" + 
+                                    "Khoa Công Nghệ Thông Tin, Trường Đại Học Sư Phạm Kỹ Thuật Thành Phố Hồ Chí Minh");
             return success("Block user success !!!");
         } catch (MongoException e) {
             return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
@@ -250,5 +271,28 @@ public class UserServiceImpl extends ServiceBase implements UserService {
             result.add(resp);
         }
         return success(result);
+    }
+
+    @Override
+    public ResponseEntity<?> deleteUser(ObjectId userId) {
+        User user = findUserById(userId);
+        if (user == null) {
+            return error(ResponseCode.USER_NOT_FOUND.getCode(), ResponseCode.USER_NOT_FOUND.getMessage());
+        }
+        if (!user.getState().equals("block")) {
+            return error(400, "User isn't blocked !!!");
+        }
+
+        String[] cc = new String[1];
+        cc[0] = user.getEmail();
+
+        try {
+            this.cartService.deleteCart(user.getCart());
+            this.orderService.deleteOrder(user.getOrder());
+            this.userRepository.deleteById(userId);
+            return success("Delete user success !!!");
+        } catch (MongoException e) {
+            return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
+        }
     }
 }

@@ -44,7 +44,7 @@ public class Product {
 
     private String condition;
 
-    private String height;
+    private String weight;
 
     private String genderUser;
 
