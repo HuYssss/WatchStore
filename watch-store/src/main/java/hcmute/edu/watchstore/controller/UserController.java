@@ -6,6 +6,7 @@ import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -49,8 +50,14 @@ public class UserController extends ControllerBase {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/delete/{id}")
-    public ResponseEntity<?> blockUser(@PathVariable ObjectId id) {
+    @PostMapping("/unBlockUser/{id}")
+    public ResponseEntity<?> unBlockUser(@PathVariable ObjectId id) {
+        return this.userService.unBlockUser(id);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable ObjectId id) {
         return this.userService.deleteUser(id);
     }
 }

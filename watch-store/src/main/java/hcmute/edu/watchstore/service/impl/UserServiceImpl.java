@@ -295,4 +295,21 @@ public class UserServiceImpl extends ServiceBase implements UserService {
             return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
         }
     }
+
+    @Override
+    public ResponseEntity<?> unBlockUser(ObjectId userId) {
+        User user = findUserById(userId);
+
+        if (user == null) {
+            return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage()); 
+        }
+
+        try {
+            user.setState("active");
+            this.userRepository.save(user);
+            return success("Unblock user success !!!");
+        } catch (MongoException e) {
+            return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
+        }
+    }
 }
