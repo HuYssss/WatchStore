@@ -13,7 +13,6 @@ import com.mongodb.MongoException;
 import hcmute.edu.watchstore.base.ServiceBase;
 import hcmute.edu.watchstore.dto.response.ProductItemResponse;
 import hcmute.edu.watchstore.dto.response.ProductResponse;
-import hcmute.edu.watchstore.entity.Product;
 import hcmute.edu.watchstore.entity.ProductItem;
 import hcmute.edu.watchstore.repository.ProductItemRepository;
 import hcmute.edu.watchstore.service.ProductItemService;
@@ -28,6 +27,7 @@ public class ProductItemServiceImpl extends ServiceBase implements ProductItemSe
     @Autowired
     private ProductService productService;
 
+    // tạo hoặc chỉnh sửa một product item
     @Override
     public ObjectId saveOrEditItem(ProductItem pItem) {
         
@@ -45,19 +45,22 @@ public class ProductItemServiceImpl extends ServiceBase implements ProductItemSe
 
     }
 
+    // tìm một product item
     @Override
     public ProductItem findProductItem(ObjectId itemId) {
         Optional<ProductItem> item = this.productItemRepository.findById(itemId);
         return item.orElse(null);
     }
 
+    // lấy danh sách product item từ danh sách id
+    // vì product item bao gồm id, id sản phẩm và số lượng nên cần product item response đê trả về sản phẩm cho FE dễ xử lý
     @Override
     public List<ProductItemResponse> findProductItemResponse(List<ObjectId> itemId) {
         List<ProductItem> items = this.productItemRepository.findAll();
         List<ProductResponse> products = this.productService.findAll();
         List<ProductItemResponse> responses = new ArrayList<>();
-        if (items.isEmpty() || products.isEmpty())
-            return responses;
+        if (items.isEmpty() || products.isEmpty()) 
+            return null;
         for (ObjectId id : itemId) {
             ProductItem item = findItem(id, items);
             if (item != null) {
@@ -73,6 +76,7 @@ public class ProductItemServiceImpl extends ServiceBase implements ProductItemSe
         
     }
 
+    // xóa một product item
     @Override
     public boolean deleteItem(ObjectId itemId) {
         try {
@@ -83,6 +87,7 @@ public class ProductItemServiceImpl extends ServiceBase implements ProductItemSe
         }
     }
     
+    // tìm item trong danh sách
     public ProductItem findItem(ObjectId id, List<ProductItem> items) {
         return items.stream()
                 .filter(item -> item.getId().equals(id))
@@ -90,54 +95,10 @@ public class ProductItemServiceImpl extends ServiceBase implements ProductItemSe
                 .orElse(null);
     }
 
+    // tìm product trong danh sách do id của product là ObjectId và FE sẽ không hiểu nên cần có product respone id là String để FE dễ xử lý hơn
     public ProductResponse findProduct(ObjectId id, List<ProductResponse> products) {
         return products.stream()
                  .filter(product -> product.getId().equals(id.toHexString()))
-                 .findFirst()
-                 .orElse(null);
-    }
-
-    @Override
-    public List<ProductItem> findItemByList(List<ObjectId> itemId) {
-        List<ProductItem> allItems = this.productItemRepository.findAll();
-        List<ProductItem> response = new ArrayList<>();
-        for(ObjectId id : itemId) {
-            ProductItem item = findItem(id, allItems);
-            if (item != null) {
-                response.add(item);
-            }
-        }
-        return response;
-    }
-
-    @Override
-    public boolean deleteItemAdvance(List<ObjectId> listItemId, boolean handleQuantityProduct) {
-        try {
-            if (handleQuantityProduct) {
-                List<ProductItem> items = findItemByList(listItemId);
-                List<Product> products = this.productService.findAllNormal();
-                List<Product> updated = new ArrayList<>();
-                for(ProductItem item : items) {
-                    Product product = findProductNormal(item.getProduct(), products);
-                    if (product != null) {
-                        int amount = product.getAmount();
-                        amount = amount + item.getQuantity();
-                        product.setAmount(amount);
-                        updated.add(product);
-                    }
-                }
-                this.productService.saveProductByList(updated);
-            }
-            this.productItemRepository.deleteAllById(listItemId);
-            return true;
-        } catch (MongoException e) {
-            return false;
-        }
-    }
-
-    public Product findProductNormal(ObjectId id, List<Product> products) {
-        return products.stream()
-                 .filter(product -> product.getId().equals(id))
                  .findFirst()
                  .orElse(null);
     }

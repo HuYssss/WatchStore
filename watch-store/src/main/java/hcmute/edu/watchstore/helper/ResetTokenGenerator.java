@@ -6,6 +6,7 @@ public class ResetTokenGenerator {
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final int LENGTH = 6;
 
+    // hàm hỗ trợ tạo token reset password
     public static String generateRandomString() {
         SecureRandom random = new SecureRandom();
         StringBuilder sb = new StringBuilder();

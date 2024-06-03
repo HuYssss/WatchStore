@@ -12,6 +12,4 @@ public interface ProductItemService {
     ProductItem findProductItem(ObjectId itemId);
     List<ProductItemResponse> findProductItemResponse(List<ObjectId> itemList);
     boolean deleteItem(ObjectId itemId);
-    List<ProductItem> findItemByList(List<ObjectId> itemId);
-    boolean deleteItemAdvance(List<ObjectId> listItemId, boolean handleQuantityProduct);
 }

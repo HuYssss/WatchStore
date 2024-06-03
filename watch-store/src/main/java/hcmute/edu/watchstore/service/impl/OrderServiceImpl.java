@@ -20,15 +20,13 @@ import hcmute.edu.watchstore.dto.response.OrderResponse;
 import hcmute.edu.watchstore.dto.response.ProductItemResponse;
 import hcmute.edu.watchstore.entity.Cart;
 import hcmute.edu.watchstore.entity.Order;
-import hcmute.edu.watchstore.entity.Product;
-import hcmute.edu.watchstore.entity.ProductItem;
 import hcmute.edu.watchstore.entity.User;
 import hcmute.edu.watchstore.repository.CartRepository;
 import hcmute.edu.watchstore.repository.OrderRepository;
 import hcmute.edu.watchstore.repository.UserRepository;
+import hcmute.edu.watchstore.service.AddressService;
 import hcmute.edu.watchstore.service.OrderService;
 import hcmute.edu.watchstore.service.ProductItemService;
-import hcmute.edu.watchstore.service.ProductService;
 
 @Service
 public class OrderServiceImpl extends ServiceBase implements OrderService {
@@ -43,11 +41,12 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
     private ProductItemService productItemService;
 
     @Autowired
-    private CartRepository cartRepository;
+    private AddressService addressService;
 
     @Autowired
-    private ProductService productService;
+    private CartRepository cartRepository;
 
+    // lấy danh sách order của user
     @Override
     public ResponseEntity<?> getOrderUser(ObjectId userId) {
         Optional<User> currentUser = this.userRepository.findById(userId);
@@ -66,7 +65,7 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
                     order.getTotalPrice(),
                     this.productItemService.findProductItemResponse(order.getProductItems()),
                     order.getUser(),
-                    order.getAddress(),
+                    this.addressService.findAddressById(order.getAddress()),
                     order.getState()
                 );
 
@@ -76,12 +75,17 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
         return success(userOrder);
     }
 
+    // tạo một order mới
     @Override
     public ResponseEntity<?> createOrder(OrderRequest order, ObjectId userId) {
         Optional<User> currentUser = this.userRepository.findById(userId);
 
         if (!currentUser.isPresent()) {
             return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage());
+        }
+
+        if (order.getAddress() == null) {
+            order.setAddress(currentUser.get().getAddress().getFirst());
         }
 
         Order newOrder = new Order(
@@ -97,6 +101,7 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
         try {
             this.orderRepository.save(newOrder);
             handleManageOrderUser(order.getProductItem(), userId, "create");
+            
             List<ObjectId> orderUser = currentUser.get().getOrder();
             orderUser.add(newOrder.getId());
             currentUser.get().setOrder(orderUser);
@@ -108,6 +113,7 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
         }
     }
 
+    // hủy một order
     @Override
     public ResponseEntity<?> cancelOrderr(ObjectId orderId, ObjectId userId) {
         Optional<Order> order = this.orderRepository.findById(orderId);
@@ -129,7 +135,8 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
         }
     }
 
-    public void handleManageOrderUser(List<ObjectId> productItem, ObjectId userId, String message) {
+    // handle việc tạo hoặc hủy order
+    public boolean handleManageOrderUser(List<ObjectId> productItem, ObjectId userId, String message) {
         Optional<Cart> userCart = this.cartRepository.findByUser(userId);
 
         if (userCart.isPresent()) {
@@ -144,47 +151,17 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
                     
                 userCart.get().setProductItems(cartItem);
                 this.cartRepository.save(userCart.get());
+                return true;
             } catch (Exception e) {
-                throw new MongoException("Can't update cart user");
+                return false;
             }
         }
 
-        // handle manage quantity product
-        List<ProductItem> items = this.productItemService.findItemByList(productItem);
-        List<Product> products = this.productService.findAllNormal();
-        List<Product> updated = new ArrayList<>();
-        for(ProductItem item : items) {
-            Product product = findProduct(item.getProduct(), products);
-            if (product != null) {
-                int amount = product.getAmount();
-                if (message.equals("delete")) {
-                    amount = amount + item.getQuantity();
-                }
-                if (message.equals("create")) {
-                    amount = amount - item.getQuantity();
-                }
-                product.setAmount(amount);
-                updated.add(product);
-            }
-        }
-        this.productService.saveProductByList(updated);
+        return false;
+        
     }
 
-    public List<ObjectId> getListProductId(List<ProductItem> productItem) {
-        List<ObjectId> productId = new ArrayList<>();
-        for(ProductItem item : productItem) {
-            productId.add(item.getProduct());
-        }
-        return productId;
-    }
-
-    public Product findProduct(ObjectId id, List<Product> products) {
-        return products.stream()
-                 .filter(product -> product.getId().equals(id))
-                 .findFirst()
-                 .orElse(null);
-    }
-
+    // tính giá tiền sản phẩm trong order
     public double calculatorTotalPrice(List<ObjectId> productItem) {
         List<ProductItemResponse> responses = this.productItemService.findProductItemResponse(productItem);
         double totalPrice = 0;
@@ -196,70 +173,11 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
         return totalPrice;
     }
     
+    // tìm order theo id trong danh sách order
     public Order findItem(ObjectId id, List<Order> orders) {
         return orders.stream()
                 .filter(order -> order.getId().equals(id))
                 .findFirst()
                 .orElse(null);
-    }
-
-    @Override
-    public ResponseEntity<?> getByState(String state) {
-        List<Order> orders = this.orderRepository.findAll();
-        List<Order> result = new ArrayList<>();
-        for (Order o : orders) {
-            if (o.getState().equals(state)) {
-                result.add(o);
-            }
-        }
-        
-        if (!result.isEmpty()) {
-            return success(result);
-        }
-        return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage());
-    }
-
-    @Override
-    public ResponseEntity<?> setStateOrder(ObjectId orderId, String state) {
-        Order order = this.orderRepository.findById(orderId).orElse(null);
-        if (order == null) 
-            return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage()); 
-        
-        try {
-            order.setState(state);
-            this.orderRepository.save(order);
-            return success("Update order state success");
-        } catch (MongoException e) {
-            return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage()); 
-        }
-    }
-
-    @Override
-    public boolean deleteOrder(List<ObjectId> orderIds) {
-        List<Order> orders = this.orderRepository.findAll();
-        List<Order> userOrder = new ArrayList<>();
-        if (orders.isEmpty()) {
-            return false;
-        }
-
-        for(ObjectId id : orderIds) {
-            Order o = findItem(id, orders);
-            userOrder.add(o);
-        }
-
-        try {
-            for(Order order : userOrder) {
-                if (order.getState().equals("processing")) {
-                    this.productItemService.deleteItemAdvance(order.getProductItems(), true);
-                } else if (order.getState().equals("shipping")) {
-                    this.productItemService.deleteItemAdvance(order.getProductItems(), false);
-                }
-            }
-            this.orderRepository.deleteAllById(orderIds);
-            return true;
-        } catch (MongoException e) {
-            return false;
-        }
-
     }
 }

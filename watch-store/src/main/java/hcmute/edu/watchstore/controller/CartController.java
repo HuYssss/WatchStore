@@ -21,21 +21,19 @@ public class CartController extends ControllerBase{
     @Autowired
     private CartService cartService;
 
+    // thêm sản phẩm vào giỏ hàng
     @PostMapping("/addProductToCart")
     public ResponseEntity<?> addProductToCart(@RequestBody ProductItem productItem, Principal principal) {
         return this.cartService.addProductToCart(productItem, findIdByUsername(principal.getName()));
     }
 
+    // lấy toàn bộ sản phẩm có trong giỏ hàng của user
     @GetMapping("")
     public ResponseEntity<?> findCartByUser(Principal principal) {
         return this.cartService.findCartByUser(findIdByUsername(principal.getName()));
     }
 
-    @PostMapping("/editProductInCart")
-    public ResponseEntity<?> editProductInCart(@RequestBody ProductItem productItem, Principal principal) {
-        return this.cartService.editProductInCart(productItem, findIdByUsername(principal.getName()));
-    }
-
+    // xóa sản phẩm có trong giỏ hàng
     @PostMapping("/deleteProduct")
     public ResponseEntity<?> deleteProductInCart(@RequestBody ProductItem productItem, Principal principal) {
         productItem.setQuantity(0);

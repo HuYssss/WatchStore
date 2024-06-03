@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import hcmute.edu.watchstore.entity.Address;
 
-
+// interface dùng để truy suất collection Address
 @Repository
 public interface AddressRepository extends MongoRepository<Address, ObjectId> {
     List<Address> findByUser(ObjectId user);

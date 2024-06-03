@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import hcmute.edu.watchstore.constants.ResponseCode;
 
 public class ServiceBase {
-    
+    // trả về response success khi thành công
     public ResponseEntity<?> success(Object object) {
         Map<String, Object> response = new HashMap<>();
         response.put("data", object);
@@ -18,6 +18,7 @@ public class ServiceBase {
         return new ResponseEntity<Object>(response, HttpStatus.OK);
     }
 
+    // trả về response eror khi thất bại
     public ResponseEntity<?> error(int code, String message) {
         Map<String, Object> response = new HashMap<>();
         response.put("code", code);

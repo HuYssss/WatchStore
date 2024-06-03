@@ -1,5 +1,6 @@
 package hcmute.edu.watchstore.constants;
 
+// Các mã code và message
 public enum ResponseCode {
     OK(200, "Success"),
     NOT_FOUND(404, "Not found"),

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import hcmute.edu.watchstore.entity.Cart;
 
+// interface dùng để truy suất collection Cart
 @Repository
 public interface CartRepository extends MongoRepository<Cart, ObjectId> {
     Optional<Cart> findByUser(ObjectId user);

@@ -13,5 +13,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class OrderRequest {
     List<ObjectId> productItem;
-    String address;
+    ObjectId address;
 }

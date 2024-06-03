@@ -13,6 +13,7 @@ public class ControllerBase {
     @Autowired
     private UserService userService;
 
+    // truy suất id user từ username
     public ObjectId findIdByUsername(String username) {
         User currentUser = this.userService.findUserByUsername(username);
 

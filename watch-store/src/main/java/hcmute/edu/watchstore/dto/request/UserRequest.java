@@ -13,5 +13,4 @@ public class UserRequest {
     private String lastname;
     private String avatarImg;
     private String backgroundImg;
-    private String address;
 }

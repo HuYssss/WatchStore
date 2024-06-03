@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import hcmute.edu.watchstore.entity.Category;
 
+// interface dùng để truy suất collection Category
 @Repository
 public interface CategoryRepository extends MongoRepository<Category, ObjectId> {
     

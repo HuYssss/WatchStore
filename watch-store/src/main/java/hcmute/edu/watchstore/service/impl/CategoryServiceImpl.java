@@ -9,8 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.mongodb.MongoException;
-
 import hcmute.edu.watchstore.base.ServiceBase;
 import hcmute.edu.watchstore.constants.ResponseCode;
 import hcmute.edu.watchstore.dto.response.CategoryResponse;
@@ -31,55 +29,14 @@ public class CategoryServiceImpl extends ServiceBase implements CategoryService 
     @Autowired
     private ProductService productService;
 
-    @Override
-    public ObjectId saveOrUpdate(Category category) {
-        if (category.getId() == null) 
-            category.setId(new ObjectId());
-
-        if (category.getProduct() == null) 
-            category.setProduct(new ArrayList<>());
-
-        try {
-            this.categoryRepository.save(category);
-            return category.getId();
-        } catch (MongoException e) {
-            return null;
-        }
-    }
-
-    @Override
-    public boolean delete(ObjectId categoryId) {
-        try {
-            this.categoryRepository.deleteById(categoryId);
-            return true;
-        } catch (MongoException e) {
-            return false;
-        }
-    }
-
-    @Override
-    public ResponseEntity<?> createCategory(Category category) {
-        return (saveOrUpdate(category) != null) 
-            ? success("Create new category success !!!") 
-            : error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
-    }
-
-    @Override
-    public ResponseEntity<?> deleteCategory(ObjectId categoryId) {
-        Category category = findCategory(categoryId);
-        if(delete(categoryId)) {
-            handleDeleteCategory(category.getProduct());
-            return success("Delete category success !!!");
-        }
-        return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
-    }
-
+    // tìm category bằng id
     @Override
     public Category findCategory(ObjectId categoryId) {
         Optional<Category> category = this.categoryRepository.findById(categoryId);
         return category.orElse(null);
     }
 
+    // lấy danh sách các sản phẩm có trong category
     @Override
     public ResponseEntity<?> getCategoryResp(ObjectId categoryId) {
         Category category = findCategory(categoryId);
@@ -98,6 +55,7 @@ public class CategoryServiceImpl extends ServiceBase implements CategoryService 
         return success(categoryResponse);
     }
 
+    // handle khi xóa category
     public void handleDeleteCategory(List<ObjectId> productList) {
         if (!productList.isEmpty()) {
             List<Product> allProduct = this.productService.findAllNormal();
@@ -114,6 +72,7 @@ public class CategoryServiceImpl extends ServiceBase implements CategoryService 
         }
     }
 
+    // tìm nhiều product một lúc
     public List<ProductResponse> findProductAdvance(List<ObjectId> listId, List<ProductResponse> products) {
         List<ProductResponse> result = new ArrayList<>();
         for(ObjectId id : listId) {
@@ -126,6 +85,7 @@ public class CategoryServiceImpl extends ServiceBase implements CategoryService 
         return result;
     }
 
+    // tìm sản phẩm trong danh sách theo id
     public Product findProduct(ObjectId id, List<Product> products) {
         return products.stream()
                 .filter(p -> p.getId().equals(id))
@@ -133,6 +93,7 @@ public class CategoryServiceImpl extends ServiceBase implements CategoryService 
                 .orElse(null);
     }
 
+    // lấy danh sách các category và các id sản phẩm có trong category
     @Override
     public ResponseEntity<?> findAll() {
         List<Category> categories = this.categoryRepository.findAll();;
@@ -151,6 +112,7 @@ public class CategoryServiceImpl extends ServiceBase implements CategoryService 
         return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
     }
 
+    // chuyển đổi danh sách ObjectId sang String
     public List<String> convertListProductId(List<ObjectId> listId) {
         List<String> result = new ArrayList<>();
         for(ObjectId id : listId) {

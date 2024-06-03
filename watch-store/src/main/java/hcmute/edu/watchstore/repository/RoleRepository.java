@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import hcmute.edu.watchstore.entity.Role;
 
+// interface dùng để truy suất collection Role
 @Repository
 public interface RoleRepository extends MongoRepository<Role, ObjectId> {
 }

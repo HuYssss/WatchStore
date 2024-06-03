@@ -49,8 +49,6 @@ public class ProductResponse {
 
     private String category;
 
-    private int amount;
-
     private String state;
 
     public ProductResponse(Product product) {
@@ -74,7 +72,6 @@ public class ProductResponse {
         this.color = product.getColor();
         this.category = product.getCategory().toHexString();
         this.state = product.getState();
-        this.amount = product.getAmount();
     }
     
 }

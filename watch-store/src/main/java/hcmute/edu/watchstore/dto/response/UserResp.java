@@ -33,9 +33,9 @@ public class UserResp {
 
     private String backgroundImg;
     
-    private String address;
+    private List<String> address;
 
-    private List<ObjectId> order;
+    private List<String> order;
 
     private Set<Role> role;
 
@@ -44,8 +44,6 @@ public class UserResp {
     private String state;
     
     private String token;
-
-    private boolean isAdmin;
 
 
     public UserResp(User user) {
@@ -58,11 +56,9 @@ public class UserResp {
         this.lastname = user.getLastname();
         this.avatarImg = user.getAvatarImg();
         this.backgroundImg = user.getBackgroundImg();
-        this.address = user.getAddress();
-        this.order = user.getOrder();
-        this.role = user.getRole();
         this.cart = user.getCart();
         this.state = user.getState();
+        this.token = user.getToken();
     }
-
+    
 }

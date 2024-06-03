@@ -13,13 +13,6 @@ public interface ProductService {
     Product findProduct(ObjectId id);
     List<ProductResponse> findAll();
     List<Product> findAllNormal();
-    long countAll();
     ResponseEntity<?> findProductById(ObjectId productId);
-    ResponseEntity<?> findProductByKeyword(String keyword);
-    ResponseEntity<?> addProductToCategory(ObjectId productId, ObjectId categoryId);
-    ResponseEntity<?> createOrUpdateProduct(Product product);
-    ResponseEntity<?> delete(ObjectId objectId);
     ResponseEntity<?> getAll();
-    ResponseEntity<?> getByOption(int index, int toIndex);
-    boolean saveProductByList(List<Product> products);
 }

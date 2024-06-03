@@ -15,6 +15,7 @@ import hcmute.edu.watchstore.entity.User;
 import hcmute.edu.watchstore.repository.RoleRepository;
 import hcmute.edu.watchstore.repository.UserRepository;
 
+// cung cấp thông tin người dùng để tạo UserDetails cho Spring Security quản lý
 @Service
 public class CustomUserServiceDetail implements UserDetailsService {
     

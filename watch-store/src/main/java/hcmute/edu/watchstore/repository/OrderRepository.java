@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import hcmute.edu.watchstore.entity.Order;
 
-
+// interface dùng để truy suất collection Order
 @Repository
 public interface OrderRepository extends MongoRepository<Order, ObjectId> {
     Optional<Order> findByUser(ObjectId user);

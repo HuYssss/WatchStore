@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import hcmute.edu.watchstore.entity.Product;
 
+// interface dùng để truy suất collection Product
 @Repository
 public interface ProductRepository extends MongoRepository<Product, ObjectId> {
     

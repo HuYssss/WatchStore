@@ -24,16 +24,19 @@ public class OrderController extends ControllerBase{
     @Autowired
     private OrderService orderService;
 
+    // lấy toàn bộ order của user
     @GetMapping("")
     public ResponseEntity<?> findOrderByUser(Principal principal) {
         return this.orderService.getOrderUser(findIdByUsername(principal.getName()));
     }
 
+    // tạo một order mới
     @PostMapping("/create")
     public ResponseEntity<?> createOrder(@RequestBody OrderRequest orderReq, Principal principal) {
         return this.orderService.createOrder(orderReq, findIdByUsername(principal.getName()));
     }
 
+    // xóa order của user
     @PostMapping("/delete/{orderId}")
     public ResponseEntity<?> cancelOrder(@PathVariable ObjectId orderId, Principal principal) {
         return this.orderService.cancelOrderr(orderId, findIdByUsername(principal.getName()));

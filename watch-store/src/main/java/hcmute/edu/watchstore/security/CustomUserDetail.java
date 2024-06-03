@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import hcmute.edu.watchstore.entity.User;
 
+// lấy thông tin người dùng để Spring Security hiểu và gán quyền cho user
 public class CustomUserDetail implements UserDetails {
 
     private final User user;
@@ -43,11 +44,7 @@ public class CustomUserDetail implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        if (user.getState().equals("block")) {
-            return false;
-        } else {
-            return true;
-        }
+        return true;
     }
 
     @Override

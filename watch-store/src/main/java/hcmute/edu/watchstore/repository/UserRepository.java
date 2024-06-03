@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import hcmute.edu.watchstore.entity.User;
 
-
+// interface dùng để truy suất collection User
 @Repository
 public interface UserRepository extends MongoRepository<User, ObjectId> {
     Optional<User> findByUsername(String username);

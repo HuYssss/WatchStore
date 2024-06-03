@@ -35,7 +35,7 @@ public class User {
 
     private String backgroundImg;
     
-    private String address;
+    private List<ObjectId> address;
 
     private List<ObjectId> order;
 

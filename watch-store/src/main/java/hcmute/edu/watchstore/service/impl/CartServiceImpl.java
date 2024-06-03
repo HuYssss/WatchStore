@@ -28,6 +28,7 @@ public class CartServiceImpl extends ServiceBase implements CartService {
     @Autowired
     private CartRepository cartRepository;
 
+    // thêm một sp vào giỏ hàng
     @Override
     public ResponseEntity<?> addProductToCart(ProductItem productItem, ObjectId userId) {
         if (handleManageProductInCart(productItem, getCartUser(userId)))
@@ -36,7 +37,7 @@ public class CartServiceImpl extends ServiceBase implements CartService {
         return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
     }
 
-    // complete
+    // lấy toàn bộ sản phẩm có trong giỏ hàng
     @Override
     public ResponseEntity<?> findCartByUser(ObjectId userId) {
         Cart cartUser = getCartUser(userId);
@@ -46,10 +47,12 @@ public class CartServiceImpl extends ServiceBase implements CartService {
         return success(responses);
     }
 
+    // chỉnh sửa số lượng sản phẩm có trong giò hảng
     @Override
     public ResponseEntity<?> editProductInCart(ProductItem productItem, ObjectId userId) {
         ProductItem item = this.productItemService.findProductItem(productItem.getId());
         if (item != null) {
+            item.setProduct(productItem.getProduct());
             item.setQuantity(productItem.getQuantity());
             this.productItemService.saveOrEditItem(item);
 
@@ -60,22 +63,25 @@ public class CartServiceImpl extends ServiceBase implements CartService {
     }
 
 
-    // helper funtion
+    // lấy danh sách ProductItemResponse(id, product, quantity) từ list productItemId
+    // em sử dụng ProductItemResponse vì ProductItem ở db chỉ có id, id sản phẩm và số lượng
     public List<ProductItemResponse> getProductItemResp(List<ObjectId> pItemId) {
         return this.productItemService.findProductItemResponse(pItemId);
     }
 
+    // lấy giỏ hàng user từ database
     public Cart getCartUser(ObjectId userId) {
         Optional<Cart> userCart = this.cartRepository.findByUser(userId);
         return userCart.orElse(null);
     }
 
+    // handle cho các hành động thêm xóa sửa sản phẩm có trong giỏ hàng
     public boolean handleManageProductInCart(ProductItem productItem, Cart userCart) {
         List<ProductItemResponse> cartResp = getProductItemResp(userCart.getProductItems());
         boolean itemPresent = false;
         if (cartResp != null) {
             for (ProductItemResponse resp : cartResp) {
-                if (resp.getProduct().getId().equals(productItem.getProduct())) {
+                if (resp.getProduct().getId().equals(productItem.getProduct().toHexString())) {
                     itemPresent = true;
                     productItem.setId(new ObjectId(resp.getId()));
                     productItem.setQuantity(productItem.getQuantity() + resp.getQuantity());
@@ -105,6 +111,7 @@ public class CartServiceImpl extends ServiceBase implements CartService {
         }
     }
 
+    // xóa sản phẩm có trong giỏ hàng
     @Override
     public ResponseEntity<?> deleteProductInCart(ProductItem productItem, ObjectId userId) {
         if (handleManageProductInCart(productItem, getCartUser(userId)))
@@ -112,38 +119,4 @@ public class CartServiceImpl extends ServiceBase implements CartService {
 
         return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
     }
-
-    @Override
-    public boolean deleteCart(ObjectId cartId) {
-        Optional<Cart> cart = this.cartRepository.findById(cartId);
-
-        if (!cart.isPresent()) {
-            return false;
-        }
-
-        try {
-            this.productItemService.deleteItemAdvance(cart.get().getProductItems(), false);
-            this.cartRepository.deleteById(cartId);
-            return true;
-        } catch (MongoException e) {
-            return false;
-        }
-        
-    }
-
-    @Override
-    public ObjectId saveCart(Cart cart) {
-        if (cart.getId().equals(null)) {
-            cart.setId(new ObjectId());
-        }
-
-        try {
-            this.cartRepository.save(cart);
-            return cart.getId();
-        } catch (MongoException e) {
-            return null;
-        }
-    }
-
-    
 }
