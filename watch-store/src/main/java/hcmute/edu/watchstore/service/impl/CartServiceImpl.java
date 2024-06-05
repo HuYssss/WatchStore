@@ -133,7 +133,7 @@ public class CartServiceImpl extends ServiceBase implements CartService {
 
     @Override
     public ObjectId saveCart(Cart cart) {
-        if (cart.getId().equals(null)) {
+        if (cart.getId() == null) {
             cart.setId(new ObjectId());
         }
 

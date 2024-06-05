@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderRequest {
-    List<ObjectId> productItem;
-    String address;
+    private List<ObjectId> productItem;
+    private String address;
+    private String paymentMethod;
 }

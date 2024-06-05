@@ -20,15 +20,27 @@ public class Order {
     @Id
     private ObjectId id;
 
-    private Date orderDate;
+    private List<ObjectId> orderItems;
+
+    private String shippingAddress;
+
+    private String paymentMethod;
+
+    private double itemsPrice;
+
+    private double shippingPrice;
 
     private double totalPrice;
 
-    private List<ObjectId> productItems;
-
     private ObjectId user;
 
-    private String address;
+    private boolean isPaid;
+
+    private Date paidAt;
+
+    private boolean isDelivered;
+
+    private Date deliveredAt;
 
     private String state;
 }

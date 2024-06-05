@@ -1,8 +1,6 @@
 package hcmute.edu.watchstore.service.impl;
 
-
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,16 +58,8 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
         for(ObjectId id : currentUser.get().getOrder()) {
             Order order = findItem(id, orderList);
             if (order != null) {
-                OrderResponse response = new OrderResponse(
-                    order.getId().toHexString(),
-                    order.getOrderDate(),
-                    order.getTotalPrice(),
-                    this.productItemService.findProductItemResponse(order.getProductItems()),
-                    order.getUser(),
-                    order.getAddress(),
-                    order.getState()
-                );
-
+                OrderResponse response = new OrderResponse(order);
+                response.setProductItems(this.productItemService.findProductItemResponse(order.getOrderItems()));
                 userOrder.add(response);
             }
         }
@@ -86,13 +76,21 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
 
         Order newOrder = new Order(
             new ObjectId(),
-            new Date(),
-            calculatorTotalPrice(order.getProductItem()),
             order.getProductItem(),
-            userId,
             order.getAddress(),
+            order.getPaymentMethod(),
+            calculatorItemsPrice(order.getProductItem()),
+            30000,
+            0,
+            userId,
+            false,
+            null,
+            false,
+            null,
             "processing"
         );
+
+        newOrder.setTotalPrice(newOrder.getItemsPrice() + newOrder.getShippingPrice());
 
         try {
             this.orderRepository.save(newOrder);
@@ -118,7 +116,7 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
 
         try {
             this.orderRepository.deleteById(orderId);
-            handleManageOrderUser(order.get().getProductItems(), userId, "delete");
+            handleManageOrderUser(order.get().getOrderItems(), userId, "delete");
             List<ObjectId> orderUser = currentUser.get().getOrder();
             orderUser.remove(orderId);
             currentUser.get().setOrder(orderUser);
@@ -185,7 +183,7 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
                  .orElse(null);
     }
 
-    public double calculatorTotalPrice(List<ObjectId> productItem) {
+    public double calculatorItemsPrice(List<ObjectId> productItem) {
         List<ProductItemResponse> responses = this.productItemService.findProductItemResponse(productItem);
         double totalPrice = 0;
 
@@ -250,9 +248,9 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
         try {
             for(Order order : userOrder) {
                 if (order.getState().equals("processing")) {
-                    this.productItemService.deleteItemAdvance(order.getProductItems(), true);
+                    this.productItemService.deleteItemAdvance(order.getOrderItems(), true);
                 } else if (order.getState().equals("shipping")) {
-                    this.productItemService.deleteItemAdvance(order.getProductItems(), false);
+                    this.productItemService.deleteItemAdvance(order.getOrderItems(), false);
                 }
             }
             this.orderRepository.deleteAllById(orderIds);
