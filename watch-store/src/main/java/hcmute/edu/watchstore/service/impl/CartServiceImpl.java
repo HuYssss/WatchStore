@@ -73,9 +73,9 @@ public class CartServiceImpl extends ServiceBase implements CartService {
     public boolean handleManageProductInCart(ProductItem productItem, Cart userCart) {
         List<ProductItemResponse> cartResp = getProductItemResp(userCart.getProductItems());
         boolean itemPresent = false;
-        if (cartResp != null) {
+        if (cartResp != null && productItem.getProduct() != null) {
             for (ProductItemResponse resp : cartResp) {
-                if (resp.getProduct().getId().equals(productItem.getProduct())) {
+                if (resp.getProduct().getId().equals(productItem.getProduct().toHexString())) {
                     itemPresent = true;
                     productItem.setId(new ObjectId(resp.getId()));
                     productItem.setQuantity(productItem.getQuantity() + resp.getQuantity());
@@ -107,6 +107,7 @@ public class CartServiceImpl extends ServiceBase implements CartService {
 
     @Override
     public ResponseEntity<?> deleteProductInCart(ProductItem productItem, ObjectId userId) {
+        productItem.setQuantity(0);
         if (handleManageProductInCart(productItem, getCartUser(userId)))
             return success("Delete product in cart success !!!");
 
