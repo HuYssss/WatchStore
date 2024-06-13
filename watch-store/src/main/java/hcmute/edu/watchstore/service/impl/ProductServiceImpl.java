@@ -3,6 +3,7 @@ package hcmute.edu.watchstore.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -195,8 +196,44 @@ public class ProductServiceImpl extends ServiceBase implements ProductService{
     }
 
     @Override
-    public ResponseEntity<?> getByOption(int index, int toIndex) {
-        List<ProductResponse> data = findAll();
-        return success(data.subList(index, toIndex));
+    public ResponseEntity<?> getByOption(String option, String value) {
+        List<ProductResponse> products = findAll();
+        List<ProductResponse> result = new ArrayList<>();
+
+        if (option == null) {
+            return success(result);
+        }
+
+        if (option.equals("wireMaterial")) {
+            result = products.stream()
+                .filter(product -> product.getWireMaterial().contains(value))
+                .collect(Collectors.toList());
+        }
+
+        if (option.equals("shellMaterial")) {
+            result = products.stream()
+                .filter(product -> product.getShellMaterial().contains(value))
+                .collect(Collectors.toList());
+        }
+
+        if (option.equals("style")) {
+            result = products.stream()
+                .filter(product -> product.getStyle().contains(value))
+                .collect(Collectors.toList());
+        }
+
+        if (option.equals("shape")) {
+            result = products.stream()
+                .filter(product -> product.getShape().contains(value))
+                .collect(Collectors.toList());
+        }
+
+        if (option.equals("size")) {
+            result = products.stream()
+                .filter(product -> product.getSize().contains(value))
+                .collect(Collectors.toList());
+        }
+
+        return success(result);
     }
 }

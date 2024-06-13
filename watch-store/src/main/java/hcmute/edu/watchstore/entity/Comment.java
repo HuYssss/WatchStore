@@ -11,6 +11,8 @@ import lombok.Data;
 public class Comment {
     @Id
     private ObjectId id;
+
+    private int star;
     
     private String content;
 
