@@ -56,5 +56,7 @@ public class Product {
     
     private int amount;
 
+    private double discount;
+
     private String state;
 }

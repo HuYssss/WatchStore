@@ -51,6 +51,8 @@ public class ProductResponse {
 
     private int amount;
 
+    private double discount;
+
     private String state;
 
     public ProductResponse(Product product) {
@@ -75,6 +77,7 @@ public class ProductResponse {
         this.category = product.getCategory().toHexString();
         this.state = product.getState();
         this.amount = product.getAmount();
+        this.discount = product.getDiscount();
     }
     
 }
