@@ -141,4 +141,14 @@ public class ProductItemServiceImpl extends ServiceBase implements ProductItemSe
                  .findFirst()
                  .orElse(null);
     }
+
+    @Override
+    public boolean updateItem(List<ProductItem> listItem) {
+        try {
+            this.productItemRepository.saveAll(listItem);
+            return true;
+        } catch (MongoException e) {
+            return false;
+        }
+    }
 }

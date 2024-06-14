@@ -1,5 +1,6 @@
 package hcmute.edu.watchstore.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,19 +47,6 @@ public class CartServiceImpl extends ServiceBase implements CartService {
         return success(responses);
     }
 
-    @Override
-    public ResponseEntity<?> editProductInCart(ProductItem productItem, ObjectId userId) {
-        ProductItem item = this.productItemService.findProductItem(productItem.getId());
-        if (item != null) {
-            item.setQuantity(productItem.getQuantity());
-            this.productItemService.saveOrEditItem(item);
-
-            return success("Edit product item success !!!");
-        }
-        else
-            return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage());
-    }
-
 
     // helper funtion
     public List<ProductItemResponse> getProductItemResp(List<ObjectId> pItemId) {
@@ -85,17 +73,11 @@ public class CartServiceImpl extends ServiceBase implements CartService {
 
         List<ObjectId> newItem = userCart.getProductItems();
 
-        // delete product item and handle delete in user's cart
-        if (productItem.getQuantity() == 0 && this.productItemService.deleteItem(productItem.getId())) {
-            newItem.remove(productItem.getId());
-        } else {
-            ObjectId newId = this.productItemService.saveOrEditItem(productItem);
-            if (itemPresent == false) {
-                newItem.add(newId);
-            }
-        }
+        ObjectId newId = this.productItemService.saveOrEditItem(productItem);
+        if (itemPresent == false)
+            newItem.add(newId);
         
-        // update cart user
+        
         try {
             userCart.setProductItems(newItem);
             this.cartRepository.save(userCart);
@@ -103,15 +85,6 @@ public class CartServiceImpl extends ServiceBase implements CartService {
         } catch (MongoException e) {
             return false;
         }
-    }
-
-    @Override
-    public ResponseEntity<?> deleteProductInCart(ProductItem productItem, ObjectId userId) {
-        productItem.setQuantity(0);
-        if (handleManageProductInCart(productItem, getCartUser(userId)))
-            return success("Delete product in cart success !!!");
-
-        return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
     }
 
     @Override
@@ -143,6 +116,50 @@ public class CartServiceImpl extends ServiceBase implements CartService {
             return cart.getId();
         } catch (MongoException e) {
             return null;
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> updateCart(List<ProductItemResponse> listResp, ObjectId userId) {
+        Cart userCart = getCartUser(userId);
+
+        if (userCart == null) {
+            return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
+        }
+
+        List<ObjectId> cartItem = userCart.getProductItems();
+        List<ProductItem> currentCart = this.productItemService.findItemByList(cartItem);
+        List<ProductItem> presentCart = new ArrayList<>(currentCart);
+        List<ObjectId> itemDelete = new ArrayList<>();
+
+        boolean isDelete = true;
+
+        for(ProductItem item : currentCart) {
+            for(ProductItemResponse resp : listResp) {
+                if (item.getId().toHexString().equals(resp.getId())) {
+                    item.setQuantity(resp.getQuantity());
+                    isDelete = false;
+                }
+            }
+
+            if (isDelete) {
+                presentCart.remove(item);
+                itemDelete.add(item.getId());
+                cartItem.remove(item.getId());
+            }
+
+            isDelete = true;
+        }
+
+        
+        try {
+            userCart.setProductItems(cartItem);
+            saveCart(userCart);
+            this.productItemService.updateItem(presentCart);
+            this.productItemService.deleteItemAdvance(itemDelete, false);
+            return success("Update cart user success !!!");
+        } catch (MongoException e) {
+            return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
         }
     }
 

@@ -196,41 +196,47 @@ public class ProductServiceImpl extends ServiceBase implements ProductService{
     }
 
     @Override
-    public ResponseEntity<?> getByOption(String option, String value) {
+    public ResponseEntity<?> getByOption(String option, String value, double from, double to) {
         List<ProductResponse> products = findAll();
         List<ProductResponse> result = new ArrayList<>();
 
-        if (option == null) {
+        if (option.equals("empty")) {
             return success(result);
         }
 
-        if (option.equals("wireMaterial")) {
+        if (option.equals("wireMaterial") && value.equals("empty")) {
             result = products.stream()
                 .filter(product -> product.getWireMaterial().contains(value))
                 .collect(Collectors.toList());
         }
 
-        if (option.equals("shellMaterial")) {
+        if (option.equals("shellMaterial") && value.equals("empty")) {
             result = products.stream()
                 .filter(product -> product.getShellMaterial().contains(value))
                 .collect(Collectors.toList());
         }
 
-        if (option.equals("style")) {
+        if (option.equals("style") && value.equals("empty")) {
             result = products.stream()
                 .filter(product -> product.getStyle().contains(value))
                 .collect(Collectors.toList());
         }
 
-        if (option.equals("shape")) {
+        if (option.equals("shape") && value.equals("empty")) {
             result = products.stream()
                 .filter(product -> product.getShape().contains(value))
                 .collect(Collectors.toList());
         }
 
-        if (option.equals("size")) {
+        if (option.equals("size") && value.equals("empty")) {
             result = products.stream()
                 .filter(product -> product.getSize().contains(value))
+                .collect(Collectors.toList());
+        }
+
+        if (option.equals("price") && from != 0 && to != 0) {
+            result = products.stream()
+                .filter(product -> (product.getPrice() >= from && product.getPrice() <= to))
                 .collect(Collectors.toList());
         }
 

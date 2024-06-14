@@ -20,6 +20,6 @@ public interface ProductService {
     ResponseEntity<?> createOrUpdateProduct(Product product);
     ResponseEntity<?> delete(ObjectId objectId);
     ResponseEntity<?> getAll();
-    ResponseEntity<?> getByOption(String option, String value);
+    ResponseEntity<?> getByOption(String option, String value, double from, double to);
     boolean saveProductByList(List<Product> products);
 }

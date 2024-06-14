@@ -46,8 +46,11 @@ public class ProductController {
     }
 
     @GetMapping("/getByOption")
-    public ResponseEntity<?> getByOption(@RequestParam(value = "option") String option, @RequestParam(value = "value") String value) {
-        return this.productService.getByOption(option, value);
+    public ResponseEntity<?> getByOption(@RequestParam(value = "option", defaultValue = "empty") String option
+                                        , @RequestParam(value = "value", defaultValue = "empty") String value
+                                        , @RequestParam(value = "from", defaultValue = "0") double from
+                                        , @RequestParam(value = "to", defaultValue = "0") double to) {
+        return this.productService.getByOption(option, value, from, to);
     }
     
 

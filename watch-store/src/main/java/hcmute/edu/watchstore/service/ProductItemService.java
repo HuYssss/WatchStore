@@ -9,6 +9,7 @@ import hcmute.edu.watchstore.entity.ProductItem;
 
 public interface ProductItemService {
     ObjectId saveOrEditItem(ProductItem productIt);
+    boolean updateItem(List<ProductItem> listItem);
     ProductItem findProductItem(ObjectId itemId);
     List<ProductItemResponse> findProductItemResponse(List<ObjectId> itemList);
     boolean deleteItem(ObjectId itemId);
