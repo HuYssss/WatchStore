@@ -14,11 +14,14 @@ import com.mongodb.MongoException;
 import hcmute.edu.watchstore.base.ServiceBase;
 import hcmute.edu.watchstore.constants.ResponseCode;
 import hcmute.edu.watchstore.dto.response.ProductItemResponse;
+import hcmute.edu.watchstore.dto.response.ProductResponse;
 import hcmute.edu.watchstore.entity.Cart;
+import hcmute.edu.watchstore.entity.Product;
 import hcmute.edu.watchstore.entity.ProductItem;
 import hcmute.edu.watchstore.repository.CartRepository;
 import hcmute.edu.watchstore.service.CartService;
 import hcmute.edu.watchstore.service.ProductItemService;
+import hcmute.edu.watchstore.service.ProductService;
 
 @Service
 public class CartServiceImpl extends ServiceBase implements CartService {
@@ -29,12 +32,32 @@ public class CartServiceImpl extends ServiceBase implements CartService {
     @Autowired
     private CartRepository cartRepository;
 
+    @Autowired
+    private ProductService productService;
+
     @Override
     public ResponseEntity<?> addProductToCart(ProductItem productItem, ObjectId userId) {
-        if (handleManageProductInCart(productItem, getCartUser(userId)))
-            return success("Add product to cart success !!!");
+        String message = handleManageProductInCart(productItem, getCartUser(userId));
+        if (message == null)
+            return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
 
-        return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
+        if (message.equals("IsPresent")) {
+            return success("Add product success !!!");
+        } else {
+            Product product = this.productService.findProduct(productItem.getProduct());
+
+            if (product == null) {
+                error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
+            }
+
+            ProductResponse pResp = new ProductResponse(product);
+            return success(
+                new ProductItemResponse(
+                    message,
+                    pResp,
+                    productItem.getQuantity()
+                ));
+        }
     }
 
     // complete
@@ -58,7 +81,7 @@ public class CartServiceImpl extends ServiceBase implements CartService {
         return userCart.orElse(null);
     }
 
-    public boolean handleManageProductInCart(ProductItem productItem, Cart userCart) {
+    public String handleManageProductInCart(ProductItem productItem, Cart userCart) {
         List<ProductItemResponse> cartResp = getProductItemResp(userCart.getProductItems());
         boolean itemPresent = false;
         if (cartResp != null && productItem.getProduct() != null) {
@@ -77,13 +100,16 @@ public class CartServiceImpl extends ServiceBase implements CartService {
         if (itemPresent == false)
             newItem.add(newId);
         
-        
         try {
             userCart.setProductItems(newItem);
             this.cartRepository.save(userCart);
-            return true;
+            if (itemPresent) {
+                return "IsPresent";
+            }
+            else
+                return newId.toHexString();
         } catch (MongoException e) {
-            return false;
+            return null;
         }
     }
 

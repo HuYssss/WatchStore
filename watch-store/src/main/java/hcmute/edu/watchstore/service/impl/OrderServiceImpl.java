@@ -188,7 +188,7 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
         double totalPrice = 0;
 
         for (ProductItemResponse resp : responses) {
-            totalPrice += resp.getProduct().getPrice() * resp.getQuantity();
+            totalPrice += resp.getProduct().getPrice() * (1 - resp.getProduct().getDiscount()) * resp.getQuantity();
         }
 
         return totalPrice;
