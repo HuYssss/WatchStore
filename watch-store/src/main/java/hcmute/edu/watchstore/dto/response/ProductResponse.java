@@ -53,6 +53,8 @@ public class ProductResponse {
 
     private double discount;
 
+    private int waterproof;
+
     private String state;
 
     public ProductResponse(Product product) {
@@ -78,6 +80,7 @@ public class ProductResponse {
         this.state = product.getState();
         this.amount = product.getAmount();
         this.discount = product.getDiscount();
+        this.waterproof = product.getWaterproof();
     }
     
 }

@@ -58,5 +58,7 @@ public class Product {
 
     private double discount;
 
+    private int waterproof;
+
     private String state;
 }

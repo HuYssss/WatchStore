@@ -3,6 +3,7 @@ package hcmute.edu.watchstore.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import org.bson.types.ObjectId;
@@ -136,6 +137,13 @@ public class ProductServiceImpl extends ServiceBase implements ProductService{
 
     @Override
     public long countAll() {
+        List<Product> products = this.productRepository.findAll();
+        List<Product> update = new ArrayList<>();
+        for (Product product : products) {
+            product.setWaterproof(randomwaterproof());
+            update.add(product);
+        }
+        this.productRepository.saveAll(update);
         return this.productRepository.count();
     }
 
@@ -241,5 +249,22 @@ public class ProductServiceImpl extends ServiceBase implements ProductService{
         }
 
         return success(result);
+    }
+
+    public int randomwaterproof() {
+        Random random = new Random();
+
+        int randomInt = random.nextInt(4);
+
+        switch (randomInt) {
+            case 1:
+                return 3;
+            case 2:
+                return 5;
+            case 3:
+                return 10;
+            default:
+                return 20;
+        }
     }
 }
