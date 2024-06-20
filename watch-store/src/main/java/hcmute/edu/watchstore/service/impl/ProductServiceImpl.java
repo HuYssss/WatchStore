@@ -267,4 +267,9 @@ public class ProductServiceImpl extends ServiceBase implements ProductService{
                 return 20;
         }
     }
+
+    @Override
+    public ResponseEntity<?> removeProductFromCategory(ObjectId productId) {
+        return addProductToCategory(productId, new ObjectId("662a058d43948d98f91010b8"));
+    }
 }

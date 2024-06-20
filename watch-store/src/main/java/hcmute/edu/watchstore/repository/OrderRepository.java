@@ -1,6 +1,6 @@
 package hcmute.edu.watchstore.repository;
 
-import java.util.Optional;
+import java.util.List;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -11,5 +11,5 @@ import hcmute.edu.watchstore.entity.Order;
 
 @Repository
 public interface OrderRepository extends MongoRepository<Order, ObjectId> {
-    Optional<Order> findByUser(ObjectId user);
+    List<Order> findByUser(ObjectId user);
 }

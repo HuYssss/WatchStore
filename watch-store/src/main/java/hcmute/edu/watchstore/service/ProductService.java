@@ -17,6 +17,7 @@ public interface ProductService {
     ResponseEntity<?> findProductById(ObjectId productId);
     ResponseEntity<?> findProductByKeyword(String keyword);
     ResponseEntity<?> addProductToCategory(ObjectId productId, ObjectId categoryId);
+    ResponseEntity<?> removeProductFromCategory(ObjectId productId);
     ResponseEntity<?> createOrUpdateProduct(Product product);
     ResponseEntity<?> delete(ObjectId objectId);
     ResponseEntity<?> getAll();

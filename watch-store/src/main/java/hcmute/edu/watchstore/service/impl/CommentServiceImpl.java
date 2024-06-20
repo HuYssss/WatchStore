@@ -47,6 +47,10 @@ public class CommentServiceImpl extends ServiceBase implements CommentService {
 
     @Override
     public ResponseEntity<?> createNewComment(Comment comment) {
+        if (comment.getProduct() == null) {
+            return error(ResponseCode.NO_CONTENT.getCode(), "Comment doesn't have product");
+        }
+
         if (saveOrEditComment(comment) != null) {
             return success("Create comment success");
         } else {
@@ -57,13 +61,23 @@ public class CommentServiceImpl extends ServiceBase implements CommentService {
     @Override
     public ResponseEntity<?> editComment(Comment comment, ObjectId userId) {
         Optional<Comment> currentComment = this.commentRepository.findById(comment.getId());
-        if (!currentComment.isPresent() || !currentComment.get().getUser().equals(userId)) {
-            error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
+        if (!currentComment.isPresent()) {
+            return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
         }
 
-        comment.setUser(userId);
+        if (!currentComment.get().getUser().equals(userId)) {
+            return error(ResponseCode.INCORRECT_AUTHEN.getCode(), "User doesn't have comment");
+        }
+        
+        if (comment.getStar() != 0) {
+            currentComment.get().setStar(comment.getStar());
+        }
 
-        if (saveOrEditComment(comment) != null) {
+        if (comment.getContent() != null) {
+            currentComment.get().setContent(comment.getContent());
+        }
+
+        if (saveOrEditComment(currentComment.get()) != null) {
             return success("Edit comment success !!!");
         }
         else {
@@ -75,8 +89,12 @@ public class CommentServiceImpl extends ServiceBase implements CommentService {
     public ResponseEntity<?> deleteCommentById(ObjectId commentId, ObjectId userId) {
         Optional<Comment> currentComment = this.commentRepository.findById(commentId);
 
-        if (!currentComment.isPresent() || !currentComment.get().getUser().equals(userId)) {
+        if (!currentComment.isPresent()) {
             error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
+        }
+
+        if (!currentComment.get().getUser().equals(userId)) {
+            return error(ResponseCode.INCORRECT_AUTHEN.getCode(), "User doesn't have comment");
         }
 
         if (deleteComment(commentId)) {

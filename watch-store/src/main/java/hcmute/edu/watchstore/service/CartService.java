@@ -13,6 +13,6 @@ public interface CartService {
     ResponseEntity<?> addProductToCart(ProductItem productItem, ObjectId userId);
     ResponseEntity<?> findCartByUser(ObjectId userId);
     ResponseEntity<?> updateCart(List<ProductItemResponse> listResp, ObjectId userId);
-    boolean deleteCart(ObjectId cartId);
+    List<ObjectId> deleteCart(ObjectId cartId);
     ObjectId saveCart(Cart cart);
 }

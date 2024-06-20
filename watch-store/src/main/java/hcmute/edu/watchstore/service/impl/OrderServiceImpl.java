@@ -1,11 +1,15 @@
 package hcmute.edu.watchstore.service.impl;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.aggregation.BooleanOperators.Or;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +25,7 @@ import hcmute.edu.watchstore.entity.Order;
 import hcmute.edu.watchstore.entity.Product;
 import hcmute.edu.watchstore.entity.ProductItem;
 import hcmute.edu.watchstore.entity.User;
+import hcmute.edu.watchstore.helper.payment.PaymentService;
 import hcmute.edu.watchstore.repository.CartRepository;
 import hcmute.edu.watchstore.repository.OrderRepository;
 import hcmute.edu.watchstore.repository.UserRepository;
@@ -67,7 +72,7 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
     }
 
     @Override
-    public ResponseEntity<?> createOrder(OrderRequest order, ObjectId userId) {
+    public ResponseEntity<?> createOrder(OrderRequest order, ObjectId userId) throws UnsupportedEncodingException {
         Optional<User> currentUser = this.userRepository.findById(userId);
 
         if (!currentUser.isPresent()) {
@@ -78,20 +83,23 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
             new ObjectId(),
             order.getProductItem(),
             order.getAddress(),
-            order.getPaymentMethod(),
+            (order.getPaymentMethod() == null) ? "Cash on Delivery" : order.getPaymentMethod(),
             calculatorItemsPrice(order.getProductItem()),
             30000,
             0,
             userId,
-            false,
-            null,
+            order.getPaymentMethod().contains("vnpay"),
+            (order.getPaymentMethod().contains("vnpay")) ? new Date() : null,
             false,
             null,
             "processing"
         );
 
         newOrder.setTotalPrice(newOrder.getItemsPrice() + newOrder.getShippingPrice());
-
+        if (order.getPaymentMethod().contains("vnpay")) {
+            newOrder.setPaid(true);
+            newOrder.setPaidAt(new Date());
+        }
         try {
             this.orderRepository.save(newOrder);
             handleManageOrderUser(order.getProductItem(), userId, "create");
@@ -99,7 +107,9 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
             orderUser.add(newOrder.getId());
             currentUser.get().setOrder(orderUser);
             this.userRepository.save(currentUser.get());
-
+            if (order.getPaymentMethod().contains("vnpay")) {
+                return success(PaymentService.createPayment(newOrder));
+            }
             return success("Create order success !!!");
         } catch (MongoException e) {
             return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
@@ -109,18 +119,17 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
     @Override
     public ResponseEntity<?> cancelOrderr(ObjectId orderId, ObjectId userId) {
         Optional<Order> order = this.orderRepository.findById(orderId);
-        Optional<User> currentUser = this.userRepository.findById(userId);
-        if (!order.isPresent() || order.get().getState().equals("shipping")) {
+        if (!order.isPresent()) {
             return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage());
         }
 
+        if (order.get().getState().equals("shipping")) {
+            return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), "This order is shipping");
+        }
+
         try {
-            this.orderRepository.deleteById(orderId);
-            handleManageOrderUser(order.get().getOrderItems(), userId, "delete");
-            List<ObjectId> orderUser = currentUser.get().getOrder();
-            orderUser.remove(orderId);
-            currentUser.get().setOrder(orderUser);
-            this.userRepository.save(currentUser.get());
+            order.get().setState("cancel");
+            this.orderRepository.save(order.get());
             return success("Cancel order success ful !!!");
         } catch (MongoException e) {
             return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
@@ -233,31 +242,77 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
     }
 
     @Override
-    public boolean deleteOrder(List<ObjectId> orderIds) {
-        List<Order> orders = this.orderRepository.findAll();
-        List<Order> userOrder = new ArrayList<>();
-        if (orders.isEmpty()) {
-            return false;
+    public List<ObjectId> deleteOrder(List<ObjectId> orderIds) {
+        // List<Order> orders = this.orderRepository.findAll();
+        // List<Order> userOrder = new ArrayList<>();
+        // List<Object> itemDelete = new ArrayList<>();
+
+        // if (orders.isEmpty()) {
+        //     return null;
+        // }
+
+        // for(ObjectId id : orderIds) {
+        //     Order o = findItem(id, orders);
+        //     if (!o.getState().equals("Shipping")) {
+        //         itemDelete.add(o.getOrderItems());
+        //         userOrder.add(o);
+        //     }
+        // }
+
+        // try {
+        //     this.orderRepository.deleteAllById(orderIds);
+        //     return true;
+        // } catch (MongoException e) {
+        //     return false;
+        // }
+
+        return null;
+
+    }
+
+    @Override
+    public boolean isUserOrderShipping(ObjectId userId) {
+        List<Order> orders = this.orderRepository.findByUser(userId);
+        return orders.stream().anyMatch(order -> order.getState().equals("shipping"));
+    }
+
+    @Override
+    public ResponseEntity<?> approvalOrder(ObjectId orderId) {
+        Optional<Order> order = this.orderRepository.findById(orderId);
+
+        if (!order.isPresent()) {
+            return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage());
         }
 
-        for(ObjectId id : orderIds) {
-            Order o = findItem(id, orders);
-            userOrder.add(o);
-        }
+        Order isPresentOrder = order.get();
+        isPresentOrder.setDelivered(true);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(isPresentOrder.getPaidAt());
+        calendar.add(Calendar.DAY_OF_MONTH, 3);
+
+        isPresentOrder.setDeliveredAt(calendar.getTime());
+        isPresentOrder.setState("shipping");
 
         try {
-            for(Order order : userOrder) {
-                if (order.getState().equals("processing")) {
-                    this.productItemService.deleteItemAdvance(order.getOrderItems(), true);
-                } else if (order.getState().equals("shipping")) {
-                    this.productItemService.deleteItemAdvance(order.getOrderItems(), false);
-                }
-            }
-            this.orderRepository.deleteAllById(orderIds);
-            return true;
+            this.orderRepository.save(isPresentOrder);
+            return success("Order is approval");
         } catch (MongoException e) {
-            return false;
+            return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getAll() {
+        List<Order> orders = this.orderRepository.findAll();
+
+        List<OrderResponse> orderResp = new ArrayList<>();
+
+        for(Order o : orders) {
+            OrderResponse resp = new OrderResponse(o);
+            orderResp.add(resp);
         }
 
+        return success(orderResp);
     }
 }

@@ -88,19 +88,14 @@ public class CartServiceImpl extends ServiceBase implements CartService {
     }
 
     @Override
-    public boolean deleteCart(ObjectId cartId) {
+    public List<ObjectId> deleteCart(ObjectId cartId) {
         Optional<Cart> cart = this.cartRepository.findById(cartId);
 
-        if (!cart.isPresent()) {
-            return false;
-        }
-
         try {
-            this.productItemService.deleteItemAdvance(cart.get().getProductItems(), false);
             this.cartRepository.deleteById(cartId);
-            return true;
+            return cart.get().getProductItems();
         } catch (MongoException e) {
-            return false;
+            return null;
         }
         
     }
