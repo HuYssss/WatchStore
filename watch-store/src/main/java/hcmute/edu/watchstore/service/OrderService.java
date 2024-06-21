@@ -18,4 +18,5 @@ public interface OrderService {
     List<ObjectId> deleteOrder(List<ObjectId> orderIds);
     ResponseEntity<?> approvalOrder(ObjectId orderId);
     boolean isUserOrderShipping(ObjectId userId);
+    ResponseEntity<?> isOrderDelivered(ObjectId orderId, ObjectId userId);
 }

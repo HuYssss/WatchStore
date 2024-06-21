@@ -43,6 +43,11 @@ public class OrderController extends ControllerBase{
         return this.orderService.cancelOrderr(orderId, findIdByUsername(principal.getName()));
     }
 
+    @PostMapping("/delivered/{orderId}")
+    public ResponseEntity<?> orderIsDelivered(@PathVariable ObjectId orderId, Principal principal) {
+        return this.orderService.isOrderDelivered(orderId, findIdByUsername(principal.getName()));
+    }
+    
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/getAll")
     public ResponseEntity<?> getAllOrder() {

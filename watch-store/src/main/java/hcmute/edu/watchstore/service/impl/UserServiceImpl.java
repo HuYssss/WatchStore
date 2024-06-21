@@ -35,6 +35,7 @@ import hcmute.edu.watchstore.repository.RoleRepository;
 import hcmute.edu.watchstore.repository.UserRepository;
 import hcmute.edu.watchstore.service.CartService;
 import hcmute.edu.watchstore.service.OrderService;
+import hcmute.edu.watchstore.service.ProductItemService;
 import hcmute.edu.watchstore.service.UserService;
 import hcmute.edu.watchstore.util.JwtUtils;
 import hcmute.edu.watchstore.util.Validation;
@@ -44,6 +45,9 @@ public class UserServiceImpl extends ServiceBase implements UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private ProductItemService productItemService;
 
     @Autowired
     private UserRepository userRepository;
@@ -275,33 +279,27 @@ public class UserServiceImpl extends ServiceBase implements UserService {
 
     @Override
     public ResponseEntity<?> deleteUser(ObjectId userId) {
-        // User user = findUserById(userId);
-        // if (user == null) {
-        //     return error(ResponseCode.USER_NOT_FOUND.getCode(), ResponseCode.USER_NOT_FOUND.getMessage());
-        // }
-        // if (!user.getState().equals("block")) {
-        //     return error(400, "User isn't blocked !!!");
-        // }
+        User user = findUserById(userId);
+        if (user == null) {
+            return error(ResponseCode.USER_NOT_FOUND.getCode(), ResponseCode.USER_NOT_FOUND.getMessage());
+        }
+        if (!user.getState().equals("block")) {
+            return error(400, "User isn't blocked !!!");
+        }
 
-        // if (!this.orderService.isUserOrderShipping(userId)) {
-        //     try {
-        //         String message = "vi phạm điều khoản. Tài khoản của bạn sắp bị xóa, nếu có sai sót xin vui lòng liên hệ cho quản trị trang web thông qua email lehuyburn23@gmail.com.";
-        //         blockUser(userId, message);
-        //         if (condition) {
-                    
-        //         }
-        //     }
-        // }
+        if (this.orderService.isUserOrderShipping(userId)) {
+            return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), "User have order is shipping");
+        }
 
-        // try {
-        //     List<ObjectId> itemDelete = this.cartService.deleteCart(user.getCart());
-        //     this.orderService.deleteOrder(user.getOrder());
-        //     this.userRepository.deleteById(userId);
-        //     return success("Delete user success !!!");
-        // } catch (MongoException e) {
-        //     return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
-        // }
-        return null;
+        try {
+            List<ObjectId> itemDelete = this.cartService.deleteCart(user.getCart());
+            itemDelete.addAll(this.orderService.deleteOrder(user.getOrder()));
+            this.productItemService.deleteItemAdvance(itemDelete, false);
+            this.userRepository.deleteById(userId);
+            return success("Delete user success !!!");
+        } catch (MongoException e) {
+            return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
+        }
     }
 
     @Override

@@ -2,14 +2,12 @@ package hcmute.edu.watchstore.service.impl;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.aggregation.BooleanOperators.Or;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -243,31 +241,28 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
 
     @Override
     public List<ObjectId> deleteOrder(List<ObjectId> orderIds) {
-        // List<Order> orders = this.orderRepository.findAll();
-        // List<Order> userOrder = new ArrayList<>();
-        // List<Object> itemDelete = new ArrayList<>();
+        List<Order> orders = this.orderRepository.findAll();
+        List<Order> userOrder = new ArrayList<>();
+        List<ObjectId> itemDelete = new ArrayList<>();
 
-        // if (orders.isEmpty()) {
-        //     return null;
-        // }
+        if (orders.isEmpty()) {
+            return null;
+        }
 
-        // for(ObjectId id : orderIds) {
-        //     Order o = findItem(id, orders);
-        //     if (!o.getState().equals("Shipping")) {
-        //         itemDelete.add(o.getOrderItems());
-        //         userOrder.add(o);
-        //     }
-        // }
+        for(ObjectId id : orderIds) {
+            Order o = findItem(id, orders);
+            if (!o.getState().equals("Shipping")) {
+                itemDelete.addAll(o.getOrderItems());
+                userOrder.add(o);
+            }
+        }
 
-        // try {
-        //     this.orderRepository.deleteAllById(orderIds);
-        //     return true;
-        // } catch (MongoException e) {
-        //     return false;
-        // }
-
-        return null;
-
+        try {
+            this.orderRepository.deleteAllById(orderIds);
+            return itemDelete;
+        } catch (MongoException e) {
+            return null;
+        }
     }
 
     @Override
@@ -285,13 +280,6 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
         }
 
         Order isPresentOrder = order.get();
-        isPresentOrder.setDelivered(true);
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(isPresentOrder.getPaidAt());
-        calendar.add(Calendar.DAY_OF_MONTH, 3);
-
-        isPresentOrder.setDeliveredAt(calendar.getTime());
         isPresentOrder.setState("shipping");
 
         try {
@@ -314,5 +302,26 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
         }
 
         return success(orderResp);
+    }
+
+    @Override
+    public ResponseEntity<?> isOrderDelivered(ObjectId orderId, ObjectId userId) {
+        Optional<Order> order = this.orderRepository.findById(orderId);
+
+        if (!order.isPresent()) {
+            return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage());
+        }
+
+        Order isPresentOrder = order.get();
+        isPresentOrder.setDelivered(true);
+        isPresentOrder.setDeliveredAt(new Date());
+        isPresentOrder.setState("complete");
+
+        try {
+            this.orderRepository.save(isPresentOrder);
+            return success("Order is delivered");
+        } catch (Exception e) {
+            return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
+        }
     }
 }
