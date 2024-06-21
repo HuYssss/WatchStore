@@ -217,15 +217,24 @@ public class UserServiceImpl extends ServiceBase implements UserService {
         if (user == null) {
             return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage());
         }
+        
+        UserResp userResp = getUserResp(user);
+
+        return success(userResp);
+    }
+
+    public UserResp getUserResp(User user) {
         UserResp userResp = new UserResp(user);
 
         for(Role r : user.getRole()){
             Optional<Role> role = this.roleRepository.findById(r.getId());
             if (role.isPresent() && role.get().getRoleName().equals("ADMIN")) {
                 userResp.setAdmin(true);
+                break;
             }
         }
-        return success(userResp);
+
+        return userResp;
     }
 
     @Override

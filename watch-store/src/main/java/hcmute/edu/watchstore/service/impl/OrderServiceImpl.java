@@ -17,11 +17,14 @@ import hcmute.edu.watchstore.base.ServiceBase;
 import hcmute.edu.watchstore.constants.ResponseCode;
 import hcmute.edu.watchstore.dto.request.OrderRequest;
 import hcmute.edu.watchstore.dto.response.OrderResponse;
+import hcmute.edu.watchstore.dto.response.OrderResponseV2;
 import hcmute.edu.watchstore.dto.response.ProductItemResponse;
+import hcmute.edu.watchstore.dto.response.UserResp;
 import hcmute.edu.watchstore.entity.Cart;
 import hcmute.edu.watchstore.entity.Order;
 import hcmute.edu.watchstore.entity.Product;
 import hcmute.edu.watchstore.entity.ProductItem;
+import hcmute.edu.watchstore.entity.Role;
 import hcmute.edu.watchstore.entity.User;
 import hcmute.edu.watchstore.helper.payment.PaymentService;
 import hcmute.edu.watchstore.repository.CartRepository;
@@ -334,8 +337,14 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
             return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage());
         }
 
-        OrderResponse response = new OrderResponse(order.get());
+        OrderResponseV2 response = new OrderResponseV2(order.get());
         response.setProductItems(this.productItemService.findProductItemResponse(order.get().getOrderItems()));
+
+        Optional<User> user = this.userRepository.findById(order.get().getUser());
+        if (user.isPresent()) {
+            UserResp userResp = new UserResp(user.get());
+            response.setUser(userResp);
+        }
 
         return success(response);
     }
