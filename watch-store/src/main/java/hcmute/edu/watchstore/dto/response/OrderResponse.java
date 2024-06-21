@@ -3,8 +3,6 @@ package hcmute.edu.watchstore.dto.response;
 import java.util.Date;
 import java.util.List;
 
-import org.bson.types.ObjectId;
-
 import hcmute.edu.watchstore.entity.Order;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -28,7 +26,7 @@ public class OrderResponse {
 
     private double totalPrice;
 
-    private ObjectId user;
+    private String user;
 
     private boolean isPaid;
 
@@ -37,6 +35,8 @@ public class OrderResponse {
     private boolean isDelivered;
 
     private Date deliveredAt;
+
+    private Date createdAt;
 
     private String state;
 
@@ -48,12 +48,13 @@ public class OrderResponse {
         this.itemsPrice = order.getItemsPrice();
         this.shippingPrice = order.getShippingPrice();
         this.totalPrice = order.getTotalPrice();
-        this.user = order.getUser();
+        this.user = order.getUser().toHexString();
         this.isPaid = (order.getPaidAt() == null) ? false : true;
         this.paidAt = order.getPaidAt();
         this.isDelivered = (order.getDeliveredAt() == null) ? false : true;
         this.deliveredAt = order.getDeliveredAt();
         this.state = order.getState();
+        this.createdAt = order.getCreatedAt();
     }
 
 }

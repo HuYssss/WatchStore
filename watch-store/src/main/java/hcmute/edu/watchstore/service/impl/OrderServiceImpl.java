@@ -90,6 +90,7 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
             (order.getPaymentMethod().contains("vnpay")) ? new Date() : null,
             false,
             null,
+            new Date(),
             "processing"
         );
 
@@ -323,5 +324,19 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
         } catch (Exception e) {
             return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
         }
+    }
+
+    @Override
+    public ResponseEntity<?> getOrderDetail(ObjectId orderId) {
+        Optional<Order> order = this.orderRepository.findById(orderId);
+
+        if (!order.isPresent()) {
+            return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage());
+        }
+
+        OrderResponse response = new OrderResponse(order.get());
+        response.setProductItems(this.productItemService.findProductItemResponse(order.get().getOrderItems()));
+
+        return success(response);
     }
 }

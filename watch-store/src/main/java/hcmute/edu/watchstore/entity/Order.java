@@ -42,5 +42,7 @@ public class Order {
 
     private Date deliveredAt;
 
+    private Date createdAt;
+
     private String state;
 }

@@ -19,4 +19,5 @@ public interface OrderService {
     ResponseEntity<?> approvalOrder(ObjectId orderId);
     boolean isUserOrderShipping(ObjectId userId);
     ResponseEntity<?> isOrderDelivered(ObjectId orderId, ObjectId userId);
+    ResponseEntity<?> getOrderDetail(ObjectId orderId);
 }

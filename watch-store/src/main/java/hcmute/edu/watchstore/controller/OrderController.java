@@ -65,4 +65,10 @@ public class OrderController extends ControllerBase{
     public ResponseEntity<?> cancelOrderAdmin(@RequestParam ObjectId orderId) {
         return this.orderService.setStateOrder(orderId, "cancel");
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/orderDetail/{orderId}")
+    public ResponseEntity<?> orderDetail(@PathVariable ObjectId orderId) {
+        return this.orderService.getOrderDetail(orderId);
+    }
 }
