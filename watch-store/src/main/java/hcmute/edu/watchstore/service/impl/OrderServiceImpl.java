@@ -24,7 +24,6 @@ import hcmute.edu.watchstore.entity.Cart;
 import hcmute.edu.watchstore.entity.Order;
 import hcmute.edu.watchstore.entity.Product;
 import hcmute.edu.watchstore.entity.ProductItem;
-import hcmute.edu.watchstore.entity.Role;
 import hcmute.edu.watchstore.entity.User;
 import hcmute.edu.watchstore.helper.payment.PaymentService;
 import hcmute.edu.watchstore.repository.CartRepository;
@@ -84,7 +83,7 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
             new ObjectId(),
             order.getProductItem(),
             order.getAddress(),
-            (order.getPaymentMethod() == null) ? "Cash on Delivery" : order.getPaymentMethod(),
+            (order.getPaymentMethod() == null) ? "cash" : order.getPaymentMethod(),
             calculatorItemsPrice(order.getProductItem()),
             30000,
             0,
@@ -130,8 +129,13 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
         }
 
         try {
-            order.get().setState("cancel");
-            this.orderRepository.save(order.get());
+            if (order.get().getState().equals("cancel") || order.get().getState().equals("processing")) {
+                this.productItemService.deleteItemAdvance(order.get().getOrderItems(), true);
+            }
+            else
+                this.productItemService.deleteItemAdvance(order.get().getOrderItems(), false);
+
+            this.orderRepository.delete(order.get());
             return success("Cancel order success ful !!!");
         } catch (MongoException e) {
             return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
@@ -265,7 +269,7 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
             this.orderRepository.deleteAllById(orderIds);
             return itemDelete;
         } catch (MongoException e) {
-            return null;
+            return itemDelete;
         }
     }
 
@@ -311,7 +315,7 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
     @Override
     public ResponseEntity<?> isOrderDelivered(ObjectId orderId, ObjectId userId) {
         Optional<Order> order = this.orderRepository.findById(orderId);
-
+        
         if (!order.isPresent()) {
             return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage());
         }
