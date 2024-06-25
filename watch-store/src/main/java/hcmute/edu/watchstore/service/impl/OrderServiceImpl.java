@@ -15,10 +15,12 @@ import com.mongodb.MongoException;
 
 import hcmute.edu.watchstore.base.ServiceBase;
 import hcmute.edu.watchstore.constants.ResponseCode;
+import hcmute.edu.watchstore.dto.request.BuyNowRequest;
 import hcmute.edu.watchstore.dto.request.OrderRequest;
 import hcmute.edu.watchstore.dto.response.OrderResponse;
 import hcmute.edu.watchstore.dto.response.OrderResponseV2;
 import hcmute.edu.watchstore.dto.response.ProductItemResponse;
+import hcmute.edu.watchstore.dto.response.ProductResponse;
 import hcmute.edu.watchstore.dto.response.UserResp;
 import hcmute.edu.watchstore.entity.Cart;
 import hcmute.edu.watchstore.entity.Order;
@@ -351,5 +353,51 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
         }
 
         return success(response);
+    }
+
+    @Override
+    public ResponseEntity<?> buyNow(BuyNowRequest request, ObjectId userId) {
+        ObjectId itemId = new ObjectId();
+        ProductItem item = new ProductItem();
+        item.setId(itemId);
+        item.setProduct(request.getProduct());
+        item.setQuantity(request.getQuantity());
+
+        this.productItemService.saveOrEditItem(item);
+        Product product = this.productService.findProduct(request.getProduct());
+        List<ObjectId> listItem = new ArrayList<>();
+        listItem.add(itemId);
+        
+        Order newOrder = new Order(
+            new ObjectId(),
+            listItem,
+            request.getAddress(),
+            (request.getPaymentMethod() == null) ? "cash" : request.getPaymentMethod(),
+            product.getPrice() * (100 - product.getDiscount()) / 100 * request.getQuantity(),
+            30000,
+            product.getPrice() * (100 - product.getDiscount()) / 100 * request.getQuantity() + 30000,
+            userId,
+            request.getPaymentMethod().contains("vnpay"),
+            (request.getPaymentMethod().contains("vnpay")) ? new Date() : null,
+            false,
+            null,
+            new Date(),
+            "processing"
+        );
+
+        try {
+            this.orderRepository.save(newOrder);
+            OrderResponseV2 resp = new OrderResponseV2(newOrder);
+
+            ProductItemResponse itemResp = new ProductItemResponse(itemId.toHexString(), new ProductResponse(product), request.getQuantity());
+            List<ProductItemResponse> listItemResp = new ArrayList<>();
+            listItemResp.add(itemResp);
+
+            resp.setProductItems(listItemResp);
+
+            return success(resp);
+        } catch (MongoException e) {
+            return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
+        }
     }
 }

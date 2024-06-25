@@ -6,6 +6,7 @@ import java.util.List;
 import org.bson.types.ObjectId;
 import org.springframework.http.ResponseEntity;
 
+import hcmute.edu.watchstore.dto.request.BuyNowRequest;
 import hcmute.edu.watchstore.dto.request.OrderRequest;
 
 public interface OrderService {
@@ -20,4 +21,5 @@ public interface OrderService {
     boolean isUserOrderShipping(ObjectId userId);
     ResponseEntity<?> isOrderDelivered(ObjectId orderId, ObjectId userId);
     ResponseEntity<?> getOrderDetail(ObjectId orderId);
+    ResponseEntity<?> buyNow(BuyNowRequest request, ObjectId userId);   
 }

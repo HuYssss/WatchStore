@@ -1,6 +1,5 @@
 package hcmute.edu.watchstore.dto.response;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -48,7 +47,6 @@ public class OrderResponse {
         this.paymentMethod = order.getPaymentMethod();
         this.itemsPrice = order.getItemsPrice();
         this.shippingPrice = order.getShippingPrice();
-        // this.productItems = new ArrayList<>();
         this.totalPrice = order.getTotalPrice();
         this.user = order.getUser().toHexString();
         this.isPaid = (order.getPaidAt() == null) ? false : true;

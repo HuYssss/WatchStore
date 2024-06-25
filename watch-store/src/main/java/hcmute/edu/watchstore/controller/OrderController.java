@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import hcmute.edu.watchstore.base.ControllerBase;
+import hcmute.edu.watchstore.dto.request.BuyNowRequest;
 import hcmute.edu.watchstore.dto.request.OrderRequest;
 import hcmute.edu.watchstore.service.OrderService;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -47,6 +48,12 @@ public class OrderController extends ControllerBase{
     public ResponseEntity<?> orderIsDelivered(@PathVariable ObjectId orderId, Principal principal) {
         return this.orderService.isOrderDelivered(orderId, findIdByUsername(principal.getName()));
     }
+
+    @PostMapping("/buyNow")
+    public ResponseEntity<?> buyNow(@RequestBody BuyNowRequest buyNowRequest, Principal principal) {   
+        return this.orderService.buyNow(buyNowRequest, findIdByUsername(principal.getName()));
+    }
+    
     
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/getAll")
