@@ -20,7 +20,6 @@ import hcmute.edu.watchstore.dto.request.OrderRequest;
 import hcmute.edu.watchstore.dto.response.OrderResponse;
 import hcmute.edu.watchstore.dto.response.OrderResponseV2;
 import hcmute.edu.watchstore.dto.response.ProductItemResponse;
-import hcmute.edu.watchstore.dto.response.ProductResponse;
 import hcmute.edu.watchstore.dto.response.UserResp;
 import hcmute.edu.watchstore.entity.Cart;
 import hcmute.edu.watchstore.entity.Order;
@@ -241,6 +240,9 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
             return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage()); 
         
         try {
+            if (state.equals("cancel")) {
+                this.productItemService.cancelItem(order.getOrderItems());
+            }
             order.setState(state);
             this.orderRepository.save(order);
             return success("Update order state success");

@@ -151,4 +151,26 @@ public class ProductItemServiceImpl extends ServiceBase implements ProductItemSe
             return false;
         }
     }
+
+    @Override
+    public boolean cancelItem(List<ObjectId> listItem) {
+        try {
+            List<ProductItem> items = findItemByList(listItem);
+            List<Product> products = this.productService.findAllNormal();
+            List<Product> updated = new ArrayList<>();
+            for(ProductItem item : items) {
+                Product product = findProductNormal(item.getProduct(), products);
+                if (product != null) {
+                    int amount = product.getAmount();
+                    amount = amount + item.getQuantity();
+                    product.setAmount(amount);
+                    updated.add(product);
+                }
+            }
+            this.productService.saveProductByList(updated);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

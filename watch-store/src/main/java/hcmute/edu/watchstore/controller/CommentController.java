@@ -16,15 +16,18 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
-
-
+import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
 @RequestMapping("/comment")
 public class CommentController extends ControllerBase {
     @Autowired
     private CommentService commentService;
+
+    @GetMapping("")
+    public ResponseEntity<?> getAll() {
+        return this.commentService.getAll();
+    }
 
     @PostMapping("/createComment")
     public ResponseEntity<?> createComment(@RequestBody Comment comment, Principal principal) {
@@ -40,5 +43,10 @@ public class CommentController extends ControllerBase {
     @DeleteMapping("/delete/{commentId}")
     public ResponseEntity<?> deleteComment(@PathVariable ObjectId commentId, Principal principal) {
         return this.commentService.deleteCommentById(commentId, findIdByUsername(principal.getName()));
+    }
+
+    @GetMapping("/{productId}")
+    public ResponseEntity<?> getCommentByProductId(@PathVariable ObjectId productId) {
+        return this.commentService.findCommentByProductId(productId);
     }
 }

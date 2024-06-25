@@ -1,5 +1,8 @@
 package hcmute.edu.watchstore.service.impl;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import org.bson.types.ObjectId;
@@ -11,8 +14,12 @@ import com.mongodb.MongoException;
 
 import hcmute.edu.watchstore.base.ServiceBase;
 import hcmute.edu.watchstore.constants.ResponseCode;
+import hcmute.edu.watchstore.dto.response.CommentResp;
+import hcmute.edu.watchstore.dto.response.UserResp;
 import hcmute.edu.watchstore.entity.Comment;
+import hcmute.edu.watchstore.entity.User;
 import hcmute.edu.watchstore.repository.CommentRepository;
+import hcmute.edu.watchstore.repository.UserRepository;
 import hcmute.edu.watchstore.service.CommentService;
 
 @Service
@@ -20,6 +27,9 @@ public class CommentServiceImpl extends ServiceBase implements CommentService {
 
     @Autowired
     private CommentRepository commentRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     public ObjectId saveOrEditComment(Comment comment) {
@@ -50,6 +60,8 @@ public class CommentServiceImpl extends ServiceBase implements CommentService {
         if (comment.getProduct() == null) {
             return error(ResponseCode.NO_CONTENT.getCode(), "Comment doesn't have product");
         }
+
+        comment.setCreatedOn(new Date());
 
         if (saveOrEditComment(comment) != null) {
             return success("Create comment success");
@@ -103,5 +115,42 @@ public class CommentServiceImpl extends ServiceBase implements CommentService {
             return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
         }
     }
+
+    @Override
+    public ResponseEntity<?> findCommentByProductId(ObjectId productId) {
+        List<Comment> comments = this.commentRepository.findByProduct(productId);
+        List<CommentResp> commentResps = new ArrayList<>();
+        List<User> users = this.userRepository.findAll();
+
+        for (Comment comment : comments) {
+            CommentResp resp = new CommentResp(comment);
+            resp.setUser(getUserResp(comment.getUser(), users));
+            commentResps.add(resp);
+        }
+
+        return success(commentResps);
+    }
     
+    public UserResp getUserResp(ObjectId userId, List<User> users) {
+        Optional<User> user = users.stream().filter(x -> x.getId().equals(userId)).findFirst();
+        if (user.isPresent()) {
+            return new UserResp(user.get());
+        }
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<?> getAll() {
+        List<Comment> comments = this.commentRepository.findAll();
+        List<CommentResp> commentResps = new ArrayList<>();
+        List<User> users = this.userRepository.findAll();
+
+        for (Comment comment : comments) {
+            CommentResp resp = new CommentResp(comment);
+            resp.setUser(getUserResp(comment.getUser(), users));
+            commentResps.add(resp);
+        }
+
+        return success(commentResps);
+    }
 }

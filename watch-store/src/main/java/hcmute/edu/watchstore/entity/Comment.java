@@ -1,5 +1,7 @@
 package hcmute.edu.watchstore.entity;
 
+import java.util.*;
+
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -17,6 +19,8 @@ public class Comment {
     private String content;
 
     private ObjectId product;
+
+    private Date createdOn;
 
     private ObjectId user;
 }
