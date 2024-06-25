@@ -35,7 +35,7 @@ public class OrderController extends ControllerBase{
     }
 
     @PostMapping("/create")
-    public ResponseEntity<?> createOrder(@RequestBody OrderRequest orderReq, Principal principal) throws UnsupportedEncodingException{
+    public ResponseEntity<?> createOrder(@RequestBody OrderRequest orderReq, Principal principal) throws UnsupportedEncodingException {
         return this.orderService.createOrder(orderReq, findIdByUsername(principal.getName()));
     }
 
@@ -50,7 +50,7 @@ public class OrderController extends ControllerBase{
     }
 
     @PostMapping("/buyNow")
-    public ResponseEntity<?> buyNow(@RequestBody BuyNowRequest buyNowRequest, Principal principal) {   
+    public ResponseEntity<?> buyNow(@RequestBody BuyNowRequest buyNowRequest, Principal principal) throws UnsupportedEncodingException {   
         return this.orderService.buyNow(buyNowRequest, findIdByUsername(principal.getName()));
     }
     

@@ -356,7 +356,8 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
     }
 
     @Override
-    public ResponseEntity<?> buyNow(BuyNowRequest request, ObjectId userId) {
+    public ResponseEntity<?> buyNow(BuyNowRequest request, ObjectId userId) throws UnsupportedEncodingException  {
+        Optional<User> currentUser = this.userRepository.findById(userId);
         ObjectId itemId = new ObjectId();
         ProductItem item = new ProductItem();
         item.setId(itemId);
@@ -386,16 +387,21 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
         );
 
         try {
-            this.orderRepository.save(newOrder);
-            OrderResponseV2 resp = new OrderResponseV2(newOrder);
+            this.orderRepository.save(newOrder); // save order
 
-            ProductItemResponse itemResp = new ProductItemResponse(itemId.toHexString(), new ProductResponse(product), request.getQuantity());
-            List<ProductItemResponse> listItemResp = new ArrayList<>();
-            listItemResp.add(itemResp);
+            List<ObjectId> orderUser = currentUser.get().getOrder();
+            orderUser.add(newOrder.getId());
+            currentUser.get().setOrder(orderUser);
+            this.userRepository.save(currentUser.get()); // update orders user
 
-            resp.setProductItems(listItemResp);
+            int amount = product.getAmount();
+            product.setAmount(amount - request.getQuantity());
+            this.productService.saveOrUpdate(product); // update amount product
 
-            return success(resp);
+            if (request.getPaymentMethod().contains("vnpay")) {
+                return success(PaymentService.createPayment(newOrder));
+            }
+            return success("Create order success !!!");
         } catch (MongoException e) {
             return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
         }

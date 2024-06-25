@@ -21,5 +21,5 @@ public interface OrderService {
     boolean isUserOrderShipping(ObjectId userId);
     ResponseEntity<?> isOrderDelivered(ObjectId orderId, ObjectId userId);
     ResponseEntity<?> getOrderDetail(ObjectId orderId);
-    ResponseEntity<?> buyNow(BuyNowRequest request, ObjectId userId);   
+    ResponseEntity<?> buyNow(BuyNowRequest request, ObjectId userId) throws UnsupportedEncodingException;   
 }
