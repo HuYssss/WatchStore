@@ -95,7 +95,11 @@ public class CommentServiceImpl extends ServiceBase implements CommentService {
         }
 
         if (saveOrEditComment(currentComment.get()) != null) {
-            return success("Edit comment success !!!");
+            User user = this.userRepository.findById(userId).orElse(null);
+            UserResp userResp = new UserResp(user);
+            CommentResp commentResp = new CommentResp(currentComment.get());
+            commentResp.setUser(userResp);
+            return success(commentResp);
         }
         else {
             return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
