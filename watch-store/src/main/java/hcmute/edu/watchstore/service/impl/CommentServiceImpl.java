@@ -60,11 +60,16 @@ public class CommentServiceImpl extends ServiceBase implements CommentService {
         if (comment.getProduct() == null) {
             return error(ResponseCode.NO_CONTENT.getCode(), "Comment doesn't have product");
         }
-
+        
+        comment.setId(new ObjectId());
         comment.setCreatedOn(new Date());
 
         if (saveOrEditComment(comment) != null) {
-            return success("Create comment success");
+            User user = this.userRepository.findById(comment.getUser()).orElse(null);
+            UserResp userResp = new UserResp(user);
+            CommentResp commentResp = new CommentResp(comment);
+            commentResp.setUser(userResp);
+            return success(commentResp);
         } else {
             return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
         }
