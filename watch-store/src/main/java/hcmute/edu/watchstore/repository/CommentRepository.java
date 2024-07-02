@@ -11,4 +11,5 @@ import hcmute.edu.watchstore.entity.Comment;
 @Repository
 public interface CommentRepository extends MongoRepository<Comment, ObjectId> {
     List<Comment> findByProduct(ObjectId product);
+    List<Comment> findByUser(ObjectId user);
 }

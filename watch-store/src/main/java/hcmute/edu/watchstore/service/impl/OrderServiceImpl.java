@@ -137,6 +137,13 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
                 this.productItemService.deleteItemAdvance(order.get().getOrderItems(), false);
 
             this.orderRepository.delete(order.get());
+
+            User user = this.userRepository.findById(userId).orElse(null);
+            List<ObjectId> orders = user.getOrder();
+            orders.remove(orderId);
+            user.setOrder(orders);
+
+            this.userRepository.save(user);
             return success("Cancel order success ful !!!");
         } catch (MongoException e) {
             return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
@@ -173,9 +180,16 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
                 int amount = product.getAmount();
                 if (message.equals("delete")) {
                     amount = amount + item.getQuantity();
+                    if (product.getState().equals("outOfStock")) {
+                        product.setState("saling");
+                    }
                 }
                 if (message.equals("create")) {
                     amount = amount - item.getQuantity();
+                    if (amount < 0) {
+                        amount = 0;
+                        product.setState("outOfStock");
+                    }
                 }
                 product.setAmount(amount);
                 updated.add(product);
@@ -396,8 +410,12 @@ public class OrderServiceImpl extends ServiceBase implements OrderService {
             currentUser.get().setOrder(orderUser);
             this.userRepository.save(currentUser.get()); // update orders user
 
-            int amount = product.getAmount();
-            product.setAmount(amount - request.getQuantity());
+            int amount = product.getAmount() - request.getQuantity();
+            if (amount < 0) {
+                amount = 0;
+                product.setState("ofOutStock");
+            }
+            product.setAmount(amount);
             this.productService.saveOrUpdate(product); // update amount product
 
             if (request.getPaymentMethod().contains("vnpay")) {

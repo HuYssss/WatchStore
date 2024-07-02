@@ -19,7 +19,6 @@ public class MailServiceImpl implements MailService {
     @Autowired
     private JavaMailSender javaMailSender;
 
-    @Override
     public String sendMail(MultipartFile[] file, String to, String[] cc, String subject, String body) {
         try {
             MimeMessage mimeMessage = javaMailSender.createMimeMessage();
@@ -50,9 +49,113 @@ public class MailServiceImpl implements MailService {
     }
 
     @Override
-    public String sendResetToken(String email) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'sendResetToken'");
+    public String sendResetToken(String email, String token, String username) {
+        String subject = "Yêu cầu cấp lại mật khẩu";
+        String body = "Xin chào "+ username + ",\r\n" + "\r\n" +
+            "Chúng tôi nhận được yêu cầu xin cấp lại mật khẩu từ bạn\r\n" + "\r\n" +
+            "Nếu yêu cầu này không phải của bạn xin vui lòng bỏ qua email này\r\n" + "\r\n" +
+            "Vui lòng không cung cấp token sau cho bất cứ bên nào khác để bảo mật tài khoản của bạn: " + token;
+        String[] cc = new String[1];
+        cc[0] = email;
+
+        try {
+            return sendMail(null, email, cc, subject, body);
+        } catch (Exception e) {
+            return "Send mail failure !!!";
+        }
+    }
+
+    @Override
+    public String blockUser(String email, String username, String message) {
+        String subject = "Thông báo khóa tài khoản";
+        String body = "Xin chào "+ username + ",\r\n" + "\r\n" +
+            "Chúng tôi viết email này để thông báo rằng tài khoản của bạn trên trang web Watches Store đã bị khóa tạm thời.\r\n" + "\r\n" +
+            "Lý do khóa tài khoản: " +
+            message + "\r\n\n" +
+            "Chúng tôi hiểu rằng điều này có thể gây bất tiện cho bạn và chúng tôi xin lỗi vì sự bất tiện này. Để giải quyết vấn đề và khôi phục lại tài khoản của bạn, vui lòng liên hệ với chúng tôi qua địa chỉ email lehuyburn23@gmail.com hoặc số điện thoại 0765196829 và cung cấp thông tin chi tiết về vấn đề của bạn.\r\n\n" + 
+            "Chúng tôi cam kết bảo vệ quyền lợi của khách hàng và đảm bảo rằng mọi vấn đề sẽ được giải quyết một cách nhanh chóng và công bằng.\r\n\n" + 
+            "Cảm ơn bạn đã hợp tác và thông cảm.\r\n\n" + 
+            "Trân trọng,\r\n\n" +
+            "Huỳnh Lê Huy\r\n\n" +
+            "Quản trị viên trang web\r\n\n" +
+            "Watches Store Website\r\n\n" + 
+            "Khoa Công Nghệ Thông Tin, Trường Đại Học Sư Phạm Kỹ Thuật Thành Phố Hồ Chí Minh";
+        
+        String[] cc = new String[1];
+        cc[0] = email;
+
+        try {
+            return sendMail(null, email, cc, subject, body);
+        } catch (Exception e) {
+            return "Send mail failure !!!";
+        }
+    }
+
+    @Override
+    public String deleteUser(String email, String username) {
+        String subject = "Thông báo xóa tài khoản";
+        String body = "Xin chào "+ username + ",\r\n" + "\r\n" +
+            "Chúng tôi nhận thấy có một số hành động bất thường ở tài khoản của bạn khi sử dụng trên hệ thống.\r\n" + 
+            "Sau khoảng thời gian chờ đợi mà không có được những phản hồi từ bạn. Để bảo mật thông tin về tài khoản của bạn cũng như tài nguyên của hệ thống. Chúng tôi rất tiếc phải thông báo rằng tài khoản của bạn đã bị xóa.\r\n\n" + 
+            "Cảm ơn bạn đã hợp tác và thông cảm.\r\n\n" + 
+            "Trân trọng,\r\n\n" +
+            "Huỳnh Lê Huy\r\n\n" +
+            "Quản trị viên trang web\r\n\n" +
+            "Watches Store Website\r\n\n" + 
+            "Khoa Công Nghệ Thông Tin, Trường Đại Học Sư Phạm Kỹ Thuật Thành Phố Hồ Chí Minh";
+        
+        String[] cc = new String[1];
+        cc[0] = email;
+
+        try {
+            return sendMail(null, email, cc, subject, body);
+        } catch (Exception e) {
+            return "Send mail failure !!!";
+        }
+    }
+
+    @Override
+    public String unBlockUser(String email, String username) {
+        String subject = "Thông báo đã mở khóa tài khoản";
+        String body = "Xin chào "+ username + ",\r\n" + "\r\n" +
+            "Sau nhận thấy có sự nhầm lẫn trong việc khóa tài khoản của bạn. Chúng tôi xin thông báo tài khoảng của bạn đã được mở khóa. Chúc bạn có những trải nghiệm mua tuyệt vời trong tương lai. \r\n\n" + 
+            "Cảm ơn bạn đã hợp tác và thông cảm.\r\n\n" + 
+            "Trân trọng,\r\n\n" +
+            "Huỳnh Lê Huy\r\n\n" +
+            "Quản trị viên trang web\r\n\n" +
+            "Watches Store Website\r\n\n" + 
+            "Khoa Công Nghệ Thông Tin, Trường Đại Học Sư Phạm Kỹ Thuật Thành Phố Hồ Chí Minh";
+        
+        String[] cc = new String[1];
+        cc[0] = email;
+
+        try {
+            return sendMail(null, email, cc, subject, body);
+        } catch (Exception e) {
+            return "Send mail failure !!!";
+        }
+    }
+
+    @Override
+    public String welcome(String email, String username) {
+        String subject = "Thông báo đăng ký tài khoản thành công";
+        String body = "Xin chào "+ username + ",\r\n" + "\r\n" +
+            "Chúc mừng bạn đã đăng ký thành công tài khoản tại Watches Store!\r\n\n" + 
+            "Cảm ơn bạn đã tin tưởng và lựa chọn Watches Store là nơi mua sắm. Chúc bạn có những trải nghiệm mua sắm tuyệt vời tại website của chúng tôi.\r\n\n" + 
+            "Trân trọng,\r\n\n" +
+            "Huỳnh Lê Huy\r\n\n" +
+            "Quản trị viên trang web\r\n\n" +
+            "Watches Store Website\r\n\n" + 
+            "Khoa Công Nghệ Thông Tin, Trường Đại Học Sư Phạm Kỹ Thuật Thành Phố Hồ Chí Minh";
+        
+        String[] cc = new String[1];
+        cc[0] = email;
+
+        try {
+            return sendMail(null, email, cc, subject, body);
+        } catch (Exception e) {
+            return "Send mail failure !!!";
+        }
     }
     
 }

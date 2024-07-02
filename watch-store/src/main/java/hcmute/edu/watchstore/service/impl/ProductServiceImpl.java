@@ -138,12 +138,12 @@ public class ProductServiceImpl extends ServiceBase implements ProductService{
     @Override
     public long countAll() {
         List<Product> products = this.productRepository.findAll();
-        List<Product> update = new ArrayList<>();
-        for (Product product : products) {
-            product.setWaterproof(randomwaterproof());
-            update.add(product);
-        }
-        this.productRepository.saveAll(update);
+        // List<Product> update = new ArrayList<>();
+        // for (Product product : products) {
+        //     product.setWaterproof(randomwaterproof());
+        //     update.add(product);
+        // }
+        // this.productRepository.saveAll(update);
         return this.productRepository.count();
     }
 

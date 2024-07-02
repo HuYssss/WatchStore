@@ -1,8 +1,9 @@
 package hcmute.edu.watchstore.helper;
 
-import org.springframework.web.multipart.MultipartFile;
-
 public interface MailService {
-    String sendMail(MultipartFile[] file, String to, String[] cc, String subject, String body);
-    String sendResetToken(String email);
+    String sendResetToken(String email, String token, String username);
+    String blockUser(String email, String username, String message);
+    String deleteUser(String email, String username);
+    String unBlockUser(String email, String username);
+    String welcome(String email, String username);
 }

@@ -25,12 +25,14 @@ import hcmute.edu.watchstore.dto.request.UserRequest;
 import hcmute.edu.watchstore.dto.response.LoginResponse;
 import hcmute.edu.watchstore.dto.response.UserResp;
 import hcmute.edu.watchstore.entity.Cart;
+import hcmute.edu.watchstore.entity.Comment;
 import hcmute.edu.watchstore.entity.Role;
 import hcmute.edu.watchstore.entity.User;
 import hcmute.edu.watchstore.exception.InvalidValueException;
 import hcmute.edu.watchstore.exception.NoParamException;
 import hcmute.edu.watchstore.helper.MailService;
 import hcmute.edu.watchstore.helper.ResetTokenGenerator;
+import hcmute.edu.watchstore.repository.CommentRepository;
 import hcmute.edu.watchstore.repository.RoleRepository;
 import hcmute.edu.watchstore.repository.UserRepository;
 import hcmute.edu.watchstore.service.CartService;
@@ -67,6 +69,9 @@ public class UserServiceImpl extends ServiceBase implements UserService {
     @Autowired
     private OrderService orderService;
 
+    @Autowired
+    private CommentRepository commentRepository;
+
     @Override
     public User findUserByUsername(String username) {
         Optional<User> user = this.userRepository.findByUsername(username);
@@ -100,6 +105,8 @@ public class UserServiceImpl extends ServiceBase implements UserService {
 
             saveUser.setCart(cart.getId());
             this.userRepository.save(saveUser);
+
+            this.mailService.welcome(userReq.getEmail(), userReq.getUsername());
             
             return success("Register User Success !!!");
         } catch (InvalidValueException e) {
@@ -136,18 +143,9 @@ public class UserServiceImpl extends ServiceBase implements UserService {
         Optional<User> user = this.userRepository.findByEmail(email);
         String resetToken = ResetTokenGenerator.generateRandomString();
 
-        String[] cc = new String[1];
-        cc[0] = email;
-
         if (user.isPresent()) {
             try {
-                this.mailService.sendMail(null, email, cc
-                , "Token Reset Password"
-                , "Hi "+ user.get().getUsername() + ",\r\n" + "\r\n" +
-                                    "There was a request to change your password!\r\n" + "\r\n" +
-                                    "If you did not make this request then please ignore this email.\r\n" + "\r\n" +
-                                    "Otherwise, please use this token to reset your password: " + resetToken);
-
+                this.mailService.sendResetToken(email, resetToken, user.get().getUsername());
                 user.get().setToken(resetToken);
                 
                 this.userRepository.save(user.get());
@@ -249,26 +247,10 @@ public class UserServiceImpl extends ServiceBase implements UserService {
             return error(ResponseCode.NOT_FOUND.getCode(), ResponseCode.NOT_FOUND.getMessage()); 
         }
 
-        String[] cc = new String[1];
-        cc[0] = user.getEmail();
-
         try {
             user.setState("block");
             this.userRepository.save(user);
-            this.mailService.sendMail(null, user.getEmail(), cc
-                , "Thông Báo Khóa Tài Khoản"
-                , "Kính gửi "+ user.getUsername() + ",\r\n" + "\r\n" +
-                                    "Chúng tôi viết email này để thông báo rằng tài khoản của bạn trên trang web Watches Store đã bị khóa tạm thời.\r\n" + "\r\n" +
-                                    "Lý do khóa tài khoản: " +
-                                    message + "\r\n\n" +
-                                    "Chúng tôi hiểu rằng điều này có thể gây bất tiện cho bạn và chúng tôi xin lỗi vì sự bất tiện này. Để giải quyết vấn đề và khôi phục lại tài khoản của bạn, vui lòng liên hệ với chúng tôi qua địa chỉ email lehuyburn23@gmail.com hoặc số điện thoại 0765196829 và cung cấp thông tin chi tiết về vấn đề của bạn.\r\n\n" + 
-                                    "Chúng tôi cam kết bảo vệ quyền lợi của khách hàng và đảm bảo rằng mọi vấn đề sẽ được giải quyết một cách nhanh chóng và công bằng.\r\n\n" + 
-                                    "Cảm ơn bạn đã hợp tác và thông cảm.\r\n\n" + 
-                                    "Trân trọng,\r\n\n" +
-                                    "Huỳnh Lê Huy\r\n\n" +
-                                    "Quản trị viên trang web\r\n\n" +
-                                    "Watches Store Website\r\n\n" + 
-                                    "Khoa Công Nghệ Thông Tin, Trường Đại Học Sư Phạm Kỹ Thuật Thành Phố Hồ Chí Minh");
+            this.mailService.blockUser(user.getEmail(), user.getUsername(), message);
             return success("Block user success !!!");
         } catch (MongoException e) {
             return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
@@ -304,7 +286,10 @@ public class UserServiceImpl extends ServiceBase implements UserService {
             List<ObjectId> itemDelete = this.cartService.deleteCart(user.getCart());
             itemDelete.addAll(this.orderService.deleteOrder(user.getOrder()));
             this.productItemService.deleteItemAdvance(itemDelete, false);
+            List<Comment> comments = this.commentRepository.findByUser(userId);
+            this.commentRepository.deleteAll(comments);
             this.userRepository.deleteById(userId);
+            this.mailService.deleteUser(user.getEmail(), user.getUsername());
             return success("Delete user success !!!");
         } catch (MongoException e) {
             return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
@@ -322,6 +307,7 @@ public class UserServiceImpl extends ServiceBase implements UserService {
         try {
             user.setState("active");
             this.userRepository.save(user);
+            this.mailService.unBlockUser(user.getEmail(), user.getUsername());
             return success("Unblock user success !!!");
         } catch (MongoException e) {
             return error(ResponseCode.ERROR_IN_PROCESSING.getCode(), ResponseCode.ERROR_IN_PROCESSING.getMessage());
